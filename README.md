@@ -8,6 +8,7 @@ An overview of the BatchFLEX suite of tools can be found on our GitHub page (htt
 
 # Installation
 The BatchFLEX suite can be downloaded (cloned) and installed through the GitHub repository. The downloaded file can be unzipped to a destination folder, which should be set as the working directory or file path. Of note, some of the example files (e.g., gene set files) use relative paths, so the program may fail to identify the file if a working directory is not properly set. The suite was developed in R version 4.1. 
+
 *	**Install BatchFLEX suite GitHub repository**
   * git clone https://github.com/shawlab-moffitt/BATCHFLEX
 
@@ -17,6 +18,15 @@ The BatchFLEX suite can be downloaded (cloned) and installed through the GitHub 
   * Suite of tools was built on R version 4.2
   * R script for package installation is provided in the “1-Getting_Started” folder
 
+* **MSigDB Files:** 
+  * These gene set files were gathered from the [Molecular Signatures Database (MSigDB)](http://www.gsea-msigdb.org/gsea/msigdb/index.jsp) as separate collections and processed through R to generate a master gene set file to use for GSEA and ssGSEA analysis.
+  * These files begin with "msigdb_" and can be found [here](https://github.com/shawlab-moffitt/DRPPM-EASY-ExprAnalysisShinY/tree/main/GeneSets).
+    * Please note that some gene sets are available for *Homo sapiens* and *Mus musculus* which are designated by HS or MM respectively.
+* **Tab 2 Gene Set files:**
+  * The tab 2 gene set initially written to show gene sets from the Cell Marker Database but can be adjusted by the user
+  * We also provide LINCS L1000 gene sets derived from small molecule perturbations following drug treatment.
+  * If the user choses to adjust this gene set they must also ensure there is an RData list file provided for it as well.
+    * This file can be generated with one of the [getting started scripts](https://github.com/shawlab-moffitt/DRPPM-EASY-ExprAnalysisShinY/blob/main/GettingStartedScripts/GeneSetRDataListGen.R) we described previously.
 
 
 
