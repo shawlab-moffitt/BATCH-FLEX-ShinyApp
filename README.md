@@ -8,10 +8,10 @@ An overview of the BatchFLEX suite of tools can be found on our GitHub page (htt
 
 # Installation
 The BatchFLEX suite can be downloaded (cloned) and installed through the GitHub repository. The downloaded file can be unzipped to a destination folder, which should be set as the working directory or file path. Of note, some of the example files (e.g., gene set files) use relative paths, so the program may fail to identify the file if a working directory is not properly set. The suite was developed in R version 4.1. 
-*	*Install BatchFLEX suite GitHub repository*
+*	**Install BatchFLEX suite GitHub repository**
   * git clone https://github.com/shawlab-moffitt/BATCHFLEX
 
-*	*Download and unzip repository https://github.com/shawlab-moffitt/BATCHFLEX*
+*	**Download and unzip repository https://github.com/shawlab-moffitt/BATCHFLEX**
   * Set working directory to BatchFLEX folder
   * Install required R packages
   * Suite of tools was built on R version 4.2
