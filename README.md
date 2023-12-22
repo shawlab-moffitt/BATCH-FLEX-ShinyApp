@@ -10,13 +10,13 @@ An overview of the BatchFLEX suite of tools can be found on our GitHub page (htt
 The BatchFLEX suite can be downloaded (cloned) and installed through the GitHub repository. The downloaded file can be unzipped to a destination folder, which should be set as the working directory or file path. Of note, some of the example files (e.g., gene set files) use relative paths, so the program may fail to identify the file if a working directory is not properly set. The suite was developed in R version 4.1. 
 
 *	**Install BatchFLEX suite GitHub repository**
-  * git clone https://github.com/shawlab-moffitt/BATCHFLEX
+    * git clone https://github.com/shawlab-moffitt/BATCHFLEX
 
 *	**Download and unzip repository https://github.com/shawlab-moffitt/BATCHFLEX**
-  * Set working directory to BatchFLEX folder
-  * Install required R packages
-  * Suite of tools was built on R version 4.2
-  * R script for package installation is provided in the “1-Getting_Started” folder
+    * Set working directory to BatchFLEX folder
+    * Install required R packages
+    * Suite of tools was built on R version 4.2
+    * R script for package installation is provided in the “1-Getting_Started” folder
 
 * **MSigDB Files:** 
   * These gene set files were gathered from the [Molecular Signatures Database (MSigDB)](http://www.gsea-msigdb.org/gsea/msigdb/index.jsp) as separate collections and processed through R to generate a master gene set file to use for GSEA and ssGSEA analysis.
