@@ -29,12 +29,13 @@ BatchFLEX provides an intuitive method for users to input and preview a matrix a
 <img width="276" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/70ab2e85-67b5-4767-9b2d-cbed56156ac1">
 
 Key Input Files
-  1.	Required Files
-    a.	Gene expression file where the gene symbols are in the first column and the sample names are in the first-row header.
-    b.	Meta information file that consists of a matrix with the first column the sample name. The remaining columns should contain the batch information and any variables of interest.  
-  2.	Optional Files
-    a.	Housekeeping Gene List is an optional housekeeping gene list for the RUVg correction method. The gene list should be a tab separated file with a single column of genes. 
-    b.	Gene set of Interest is an optional list of genes for a pathway of interest that can be used with the gene set enrichment analysis. 
+1. Required Files
+    * Gene expression file where the gene symbols are in the first column and the sample names are in the first-row header.
+    * Meta information file that consists of a matrix with the first column the sample name. The remaining columns should contain the batch information and any variables of interest.
+    	
+2. Optional Files
+    * Housekeeping Gene List is an optional housekeeping gene list for the RUVg correction method. The gene list should be a tab separated file with a single column of genes. 
+    * Gene set of Interest is an optional list of genes for a pathway of interest that can be used with the gene set enrichment analysis. 
 
 Matrix and meta files should be formatted similarly to the example datasets shown below. The matrix file should contain genes in the first column and sample IDs in the first row. The meta file should contain sample IDs in the first column and any accompanying meta information in subsequent columns. The sample IDs should match between the matrix and meta files. The meta file should include at least one column of known technical effects and at least one column of known biological effects. BatchFLEX defaults to selecting the second column of the meta file as the batch effect and the third column as the variable of interest. This can easily be changed by the user by simply selecting a different column using the dropdown menus, however, if only a single batch effect is being corrected, having this in the second column can save the user a lot of unnecessary clicking. 
 ![image](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/07fde086-9896-4999-8d95-95b2ae7a0df0)
