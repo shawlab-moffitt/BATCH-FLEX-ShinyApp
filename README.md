@@ -1,4 +1,4 @@
-# BATCH-FLEX
+# BATCH-FLEX-Shiny Tutorial
 BatchFLEX: Comprehensive software for assessing and correcting batch effects, comparing batch correction methods, and exporting corrected matrices for downstream analysis
 
 # Introduction
