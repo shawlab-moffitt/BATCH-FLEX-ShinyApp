@@ -131,10 +131,6 @@ After the user is satisfied, BatchFLEX can easily export the updated matrix for 
 
 <img width="462" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/1ed52211-e71b-4d60-8244-c46cb5ed076e">
 
-# IMMGEN Example
-<img width="468" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/0341d9b5-18ca-4ad8-b070-e247b23e79e4">
-
-
 
 
 
