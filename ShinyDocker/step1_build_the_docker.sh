@@ -1,0 +1,1 @@
+docker build -t batch_flex_shinyapp .
