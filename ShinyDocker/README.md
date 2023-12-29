@@ -10,10 +10,18 @@ To embark on Building Docker for BATCH-FLEX-Shiny, we encourage you to install D
 
 -   Clone the Docker project repository from its source.
 
+    Click github.dev
+
+    ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_04.png?raw=true)
+
+    Download ShinyDocker folder
+
+![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_05.png?raw=true)
+
 -   Open Windows command prompt and navigate to the directory containing the Dockerfie.
 
 ```         
-C:\>cd C:\Users\Administrator\Desktop\BATCH-FLEX-ShinyApp-main
+C:\>cd C:\Users\Administrator\Desktop\ShinyDocker
 ```
 
 -   Use the `docker build` command to build the Docker image. For example:
