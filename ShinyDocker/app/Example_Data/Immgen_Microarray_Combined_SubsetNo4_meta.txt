@@ -1,0 +1,233 @@
+Name	Study	CellType
+B.IFNg.2hr.Sp#3	GSE112876	B Cells
+B1a.IFNg.2hr.PC#3	GSE112876	B Cells
+MF.IFNg.2hr.PC#3	GSE112876	Macrophages
+NK.IFNg.2hr.Sp#3	GSE112876	NK Cells
+T4.IFNg.2hr.Sp#3	GSE112876	CD4 T Cells
+T8.IFNg.2hr.Sp#3	GSE112876	CD8 T Cells
+Tgd.IFNg.2hr.Sp#3	GSE112876	gd T Cells
+Treg.IFNg.2hr.Sp#3	GSE112876	Treg Cells
+ABD.TR.14w.B6#3	GSE15907	Treg Cells
+B.Fo.MLN#3	GSE15907	B Cells
+B.Fo.PC#3	GSE15907	B Cells
+B.Fo.Sp#3	GSE15907	B Cells
+B.FrE.BM#3	GSE15907	B Cells
+B.FrE.FL#3	GSE15907	B Cells
+B.FrF.BM#3	GSE15907	B Cells
+B.GC.Sp#3	GSE15907	B Cells
+B.MZ.Sp#3	GSE15907	B Cells
+B.T1.Sp#3	GSE15907	B Cells
+B.T2.Sp#3	GSE15907	B Cells
+B.T3.Sp#3	GSE15907	B Cells
+B1a.PC#3	GSE15907	B Cells
+B1a.Sp#3	GSE15907	B Cells
+B1b.PC#3	GSE15907	B Cells
+BEC.MLN#3	GSE15907	Stromal Cells
+BEC.SLN.OT#3	GSE15907	Stromal Cells
+BEC.SLN#3	GSE15907	Stromal Cells
+CD4TESTCJ#3	GSE15907	CD4 T Cells
+CD4TESTJS#3	GSE15907	CD4 T Cells
+DC.103-11b+F4/80lo.Kd#3	GSE15907	Dendritic Cells
+DC.103+11b-.Lu#3	GSE15907	Dendritic Cells
+DC.4+.MLN#3	GSE15907	Dendritic Cells
+DC.4+.SLN#3	GSE15907	Dendritic Cells
+DC.8-.Th#3	GSE15907	Dendritic Cells
+DC.8-4-11b-.MLN#3	GSE15907	Dendritic Cells
+DC.8-4-11b-.SLN#3	GSE15907	Dendritic Cells
+DC.8-4-11b+.MLN#3	GSE15907	Dendritic Cells
+DC.8-4-11b+.SLN#3	GSE15907	Dendritic Cells
+DC.8-4-11b+.Sp#3	GSE15907	Dendritic Cells
+DC.8+.MLN#3	GSE15907	Dendritic Cells
+DC.8+.SLN#3	GSE15907	Dendritic Cells
+DC.8+.Th#3	GSE15907	Dendritic Cells
+DC.IIhilang-103-11b+.SLN#3	GSE15907	Dendritic Cells
+DC.IIhilang-103-11blo.SLN#3	GSE15907	Dendritic Cells
+DC.IIhilang+103-11b+.SLN#3	GSE15907	Dendritic Cells
+DC.IIhilang+103+11blo.SLN#3	GSE15907	Dendritic Cells
+DC.pDC.8-.Sp#3	GSE15907	Dendritic Cells
+DC.pDC.8+.SLN#3	GSE15907	Dendritic Cells
+DC.pDC.8+.Sp#3	GSE15907	Dendritic Cells
+Ep.MEChi.Th#3	GSE15907	CD45- EpCAm+ Ly51- MHCIIhi
+Fi.MTS15+.Th#3	GSE15907	Fibroblast
+Fi.Sk#3	GSE15907	Fibroblast
+FRC.MLN#3	GSE15907	Fibroblast
+FRC.SLN.OT#3	GSE15907	Fibroblast
+FRC.SLN#3	GSE15907	Fibroblast
+GN.Arth.BM#3	GSE15907	Granulocytes
+GN.Arth.SynF#3	GSE15907	Granulocytes
+GN.Bl#3	GSE15907	Granulocytes
+GN.BM#3	GSE15907	Granulocytes
+GN.Thio.PC#3	GSE15907	Granulocytes
+GN.UrAc.PC#3	GSE15907	Granulocytes
+LEC.MLN#3	GSE15907	LN
+LEC.SLN.OT#3	GSE15907	LN
+LEC.SLN#3	GSE15907	LN
+LN.TR.14w.B6#3	GSE15907	LN
+MF.103-11b+.Salm3.SI#3	GSE15907	Macrophages
+MF.103-11b+.SI#3	GSE15907	Macrophages
+MF.11cloSer.Salm3.SI#3	GSE15907	Macrophages
+MF.11cloSer.SI#3	GSE15907	Macrophages
+MF.BM#3	GSE15907	Macrophages
+MF.II-480hi.PC#3	GSE15907	Macrophages
+MF.II+480lo.PC#3	GSE15907	Macrophages
+MF.Lu#3	GSE15907	Macrophages
+MF.Microglia.CNS#3	GSE15907	Macrophages
+MF.PPAR-.Lu#3	GSE15907	Macrophages
+MF.RP.Sp#3	GSE15907	Macrophages
+MF.Sbcaps.SLN#3	GSE15907	Macrophages
+MF.Thio5.II-480hi.PC#3	GSE15907	Macrophages
+MF.Thio5.II-480int.PC#3	GSE15907	Macrophages
+MF.Thio5.II+480int.PC#3	GSE15907	Macrophages
+MF.Thio5.II+480lo.PC#3	GSE15907	Macrophages
+MLP.BM#3	GSE15907	MLP
+MLP.FL#3	GSE15907	MLP
+Mo.6C-II-.Bl#3	GSE15907	Monocytes
+Mo.6C-II-.BM#3	GSE15907	Monocytes
+Mo.6C-IIint.Bl#3	GSE15907	Monocytes
+Mo.6C+II-.Bl#3	GSE15907	Monocytes
+Mo.6C+II-.BM#3	GSE15907	Monocytes
+Mo.6C+II-.LN#3	GSE15907	Monocytes
+Mo.6C+II+.Bl#3	GSE15907	Monocytes
+NK.49CI-.Sp#3	GSE15907	NK Cells
+NK.49CI+.Sp#3	GSE15907	NK Cells
+NK.b2m-.Sp#3	GSE15907	NK Cells
+NK.DAP10-.Sp#3	GSE15907	NK Cells
+NK.DAP12-.Sp#3	GSE15907	NK Cells
+NK.H+.MCMV1.Sp#3	GSE15907	NK Cells
+NK.H+.MCMV7.Sp#3	GSE15907	NK Cells
+NK.MCMV1.Sp#3	GSE15907	NK Cells
+NK.MCMV7.Sp#3	GSE15907	NK Cells
+NKT.4-.Lv#3	GSE15907	NKT Cells
+NKT.4-.Sp#3	GSE15907	NKT Cells
+NKT.4+.Lv#3	GSE15907	NKT Cells
+NKT.4+.Sp#3	GSE15907	NKT Cells
+NKT.44+NK1.1-.Th#3	GSE15907	NKT Cells
+preB.FrC.BM#3	GSE15907	precursor B Cells
+preB.FrD.BM#3	GSE15907	precursor B Cells
+preB.FrD.FL#3	GSE15907	precursor B Cells
+preT.DN2-3.Th#3	GSE15907	precursor T Cells
+preT.DN3-4.Th#3	GSE15907	precursor T Cells
+preT.DN3A.Th#3	GSE15907	precursor T Cells
+preT.DN3B.Th#3	GSE15907	precursor T Cells
+preT.ETP-2A.Th#3	GSE15907	precursor T Cells
+proB.CLP.FL#3	GSE15907	progenitor B Cells
+proB.FrA.FL#3	GSE15907	progenitor B Cells
+proB.FrBC.FL#3	GSE15907	progenitor B Cells
+SC.CDP.BM#3	GSE15907	Stem Cells
+SC.GMP.BM#3	GSE15907	Stem Cells
+SC.LTSL.BM#3	GSE15907	Stem Cells
+SC.LTSL.FL#3	GSE15907	Stem Cells
+SC.MDP.BM#3	GSE15907	Stem Cells
+SC.STSL.BM#3	GSE15907	Stem Cells
+SC.STSL.FL#3	GSE15907	Stem Cells
+St.31-38-44-.SLN#3	GSE15907	Stromal Cells
+T.4.LN.BDC#3	GSE15907	CD4 T Cells
+T.4FP3-.Sp#3	GSE15907	CD4 T Cells
+T.4FP3+25+.Sp#3	GSE15907	CD4 T Cells
+T.4int8+.Th#3	GSE15907	CD4 T Cells
+T.4Mem.LN#3	GSE15907	CD4 T Cells
+T.4Mem44h62l.LN#3	GSE15907	CD4 T Cells
+T.4Mem44h62l.Sp#3	GSE15907	CD4 T Cells
+T.4Nve.LN#3	GSE15907	CD4 T Cells
+T.4Nve.MLN#3	GSE15907	CD4 T Cells
+T.4SP24-.Th#3	GSE15907	CD4 T Cells
+T.4SP24int.Th#3	GSE15907	CD4 T Cells
+T.4SP69+.Th#3	GSE15907	CD4 T Cells
+T.8Eff.Sp.OT1.12hr.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.24hr.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d10.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d15.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d15.VSVOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d6.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d6.VSVOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d8.LisOva#3	GSE15907	CD8 T Cells
+T.8Eff.Sp.OT1.d8.VSVOva#3	GSE15907	CD8 T Cells
+T.8Mem.LN#3	GSE15907	CD8 T Cells
+T.8Mem.Sp.OT1.d100.LisOva#3	GSE15907	CD8 T Cells
+T.8Mem.Sp.OT1.d106.VSVOva#3	GSE15907	CD8 T Cells
+T.8Mem.Sp.OT1.d45.LisOva#3	GSE15907	CD8 T Cells
+T.8Mem.Sp.OT1.d45.VSVOva#3	GSE15907	CD8 T Cells
+T.8Mem.Sp#3	GSE15907	CD8 T Cells
+T.8Nve.LN#3	GSE15907	CD8 T Cells
+T.8Nve.MLN#3	GSE15907	CD8 T Cells
+T.8Nve.Sp.OT1#3	GSE15907	CD8 T Cells
+T.8Nve.Sp#3	GSE15907	CD8 T Cells
+T.8SP24-.Th#3	GSE15907	CD8 T Cells
+T.8SP24int.Th#3	GSE15907	CD8 T Cells
+T.8SP69+.Th#3	GSE15907	CD8 T Cells
+T.DP.Th#3	GSE15907	DP T Cells
+T.DP69+.Th#3	GSE15907	DP T Cells
+T.DPbl.Th#3	GSE15907	DP T Cells
+T.DPsm.Th#3	GSE15907	DP T Cells
+T.ISP.Th#3	GSE15907	ISP T Cells
+Tgd.Sp#3	GSE15907	gd T Cells
+Tgd.Th#3	GSE15907	gd T Cells
+Tgd.vg1+vd6-24ahi.Th#3	GSE15907	gd T Cells
+Tgd.vg1+vd6+24ahi.Th#3	GSE15907	gd T Cells
+Tgd.vg1+vd6+24alo.Th#3	GSE15907	gd T Cells
+Tgd.vg2-.act.Sp#3	GSE15907	gd T Cells
+Tgd.vg2-.Sp.TCRbko#3	GSE15907	gd T Cells
+Tgd.vg2-.Sp#3	GSE15907	gd T Cells
+Tgd.vg2+.act.Sp#3	GSE15907	gd T Cells
+Tgd.vg2+.Sp.TCRbko#3	GSE15907	gd T Cells
+Tgd.vg2+24ahi.e17.Th#3	GSE15907	gd T Cells
+Tgd.vg2+24ahi.Th#3	GSE15907	gd T Cells
+Tgd.vg3+24ahi.e17.Th#3	GSE15907	gd T Cells
+Tgd.vg3+24alo.e17.Th#3	GSE15907	gd T Cells
+Tgd.vg5-.act.IEL#3	GSE15907	gd T Cells
+Tgd.vg5+.act.IEL#3	GSE15907	gd T Cells
+B.Mem.Sp.v2#3	GSE37448	B Cells
+BA.Bl#3	GSE37448	B Cells
+BA.Sp#3	GSE37448	B Cells
+DC.11b-.AT.v2#3	GSE37448	Dendritic Cells
+DC.11b+.AT.v2#3	GSE37448	Dendritic Cells
+Eo.BL.v2#3	GSE37448	Eosinophils
+ILC1.CD127+.SI#3	GSE37448	ILC
+ILC1.CD127+.Sp#3	GSE37448	ILC
+ILC1.CD49b-.Lv#3	GSE37448	ILC
+ILC2.SI#3	GSE37448	ILC
+ILC3.NKp46+.Rorgthi.SI#3	GSE37448	ILC
+MC.PC#3	GSE37448	Mast Cells
+MC.Sk#3	GSE37448	Mast Cells
+MC.Tr#3	GSE37448	Mast Cells
+MEChi.GFP+.Adult.KO#3	GSE37448	Medullary thymic epithelial Cells
+MF.11c-11b+.Lu#3	GSE37448	Macrophages
+MF.480hi.LV.Naive#3	GSE37448	Macrophages
+MF.480int.LV.Naive#3	GSE37448	Macrophages
+MF.Alv.Lu#3	GSE37448	Macrophages
+MF.AT.v2#3	GSE37448	Macrophages
+MF.F480hi.ctrl.PC#3	GSE37448	Macrophages
+MF.F480hi.Gata6ko.PC#3	GSE37448	Macrophages
+Mo.6+2-.BL#3	GSE37448	Monocytes
+Mo.6+2+.SLN#3	GSE37448	Monocytes
+Mo.Lu#3	GSE37448	Monocytes
+NK.CD127-.SI#3	GSE37448	NK Cells
+NK.CD127-.Sp#3	GSE37448	NK Cells
+NK.CD49b+.Lv#3	GSE37448	NK Cells
+SG.NK.CD49a+#3	GSE37448	NK Cells
+T.4Nve44-49d-11a-.Sp#3	GSE37448	CD4 T Cells
+T.8Eff.Tbet-.Sp.OT1.d6LisOVA#3	GSE37448	CD8 T Cells
+T.8Eff.Tbet+.Sp.OT1.d6LisOVA#3	GSE37448	CD8 T Cells
+T.8EffKLRG1+CD127-.Sp.d8.LisOVA#3	GSE37448	CD8 T Cells
+T.8MemKLRG1-CD127+.Sp.d8.LisOVA#3	GSE37448	CD8 T Cells
+T.DP.69-.e17.Th.v2#3	GSE37448	DP T Cells
+T.DP.Th.v2#3	GSE37448	DP T Cells
+T.DP69+.Th.v2#3	GSE37448	DP T Cells
+Tgd.vg2+24ahi.e17.Th.v2#3	GSE37448	gd T Cells
+Tgd.vg4+24ahi.e17.Th#3	GSE37448	gd T Cells
+GN.B10#3	GSE60336	Granulocytes
+GN.B6#3	GSE60336	Granulocytes
+GN.CAS#3	GSE60336	Granulocytes
+T4.B10#3	GSE60337	CD4 T Cells
+T4.B6#3	GSE60337	CD4 T Cells
+T4.CAS#3	GSE60337	CD4 T Cells
+B1ab.PC.SPF#3	GSE75202	B Cells
+BB.SP.SPF#3	GSE75202	B Cells
+DC.SP.SPF#3	GSE75202	Dendritic Cells
+MF.PC.SPF#3	GSE75202	Macrophages
+NK.SP.SPF#3	GSE75202	NK Cells
+NKT.SP.SPF#3	GSE75202	NKT Cells
+T4.SP.SPF#3	GSE75202	CD4 T Cells
+T8.SP.SPF#3	GSE75202	CD8 T Cells
+Tgd.SPF.SPF#3	GSE75202	gd T Cells
+Treg.SP.SPF#3	GSE75202	Treg Cells
