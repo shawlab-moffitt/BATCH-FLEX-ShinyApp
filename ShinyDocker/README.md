@@ -1,4 +1,4 @@
-### **Running the Docker Container Using Docker Desktop**:
+### **Running the Docker Container Using Docker Desktop and Windows cmd**:
 
 To embark on Building Docker for BATCH-FLEX-Shiny, we encourage you to install Docker Desktop on your system. Once you've installed Docker Desktop, you can build the Docker image and run the container with the following simple steps:
 
@@ -32,7 +32,7 @@ docker build -t batch_flex_shinyapp .
 
 **3. Run the Docker Container**:
 
--   Once the Docker image is successfully built, you can run the image using Docker Desktop. For instance, click 3838:3838 to display web page as following.
+-   Once the Docker image is successfully built, you can run the image using **Docker Desktop**. For instance, click 3838:3838 to display web page as following.
 
     ![](https://github.com/chingyaousf/Introduction-to-Building-Docker-for-BERLIN-Pipeline/blob/main/data/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_01.png?raw=true)
 
@@ -40,7 +40,7 @@ docker build -t batch_flex_shinyapp .
 
     ![](https://github.com/chingyaousf/Introduction-to-Building-Docker-for-BERLIN-Pipeline/blob/main/data/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_03.png?raw=true)
 
--   Run the image using Windows cmd
+-   Run the image using **Windows cmd**
 
     command:
 
@@ -50,9 +50,9 @@ docker build -t batch_flex_shinyapp .
 
 Once the container is running, you should be able to access your Shiny app by navigating to:
 
- - <http://localhost:3838>
+-   <http://localhost:3838>
 
- - <http://127.0.0.1:3838>
+-   <http://127.0.0.1:3838>
 
 in your web browser on the host machine.
 
