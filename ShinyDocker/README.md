@@ -14,7 +14,7 @@ To embark on Building Docker for BATCH-FLEX-Shiny, we encourage you to install D
 
     ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_04.png?raw=true)
 
-    Download ShinyDocker folder
+    Download ShinyDocker folder as working directory and file path.
 
 ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_05.png?raw=true)
 
