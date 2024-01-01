@@ -34,11 +34,11 @@ docker build -t batch_flex_shinyapp .
 
 -   Once the Docker image is successfully built, you can run the image using **Docker Desktop**. For instance, click 3838:3838 to display web page as following.
 
-    ![](https://github.com/chingyaousf/Introduction-to-Building-Docker-for-BERLIN-Pipeline/blob/main/data/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_01.png?raw=true)
+    ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_01.png?raw=true)
 
-    ![](https://github.com/chingyaousf/Introduction-to-Building-Docker-for-BERLIN-Pipeline/blob/main/data/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_02.png?raw=true)
+    ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_02.png?raw=true)
 
-    ![](https://github.com/chingyaousf/Introduction-to-Building-Docker-for-BERLIN-Pipeline/blob/main/data/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_03.png?raw=true)
+    ![](https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/blob/main/ShinyDocker/BATCH-FLEX-Shiny%20Docker%20Desktop%20images_03.png?raw=true)
 
 -   Run the image using **Windows cmd**
 
