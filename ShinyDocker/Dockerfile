@@ -41,7 +41,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/R/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib:/usr
 
 
 # Install required R packages
-RUN R -e "install.packages(c('shiny', 'shinyjqui', 'limma', 'DT', 'shinycssloaders', 'metafolio', 'corrplot', 'readr', 'dplyr', 'tidyverse', 'zip', 'glue', 'factoextra', 'FactoMineR', 'magick', 'ggfortify', 'ggplotify', 'draw', 'clValid', 'shinyWidgets', 'tidyr', 'immunedeconv', 'edgeR', 'umap', 'plotly', 'statVisual', 'preprocessCore', 'GSVA'))"
+RUN R -e "install.packages(c('shiny', 'shinyjqui', 'limma', 'DT', 'shinycssloaders', 'metafolio', 'corrplot', 'readr', 'dplyr', 'tidyverse', 'zip', 'glue', 'factoextra', 'FactoMineR', 'magick', 'ggfortify', 'ggplotify', 'draw', 'clValid', 'shinyWidgets', 'tidyr', 'immunedeconv', 'edgeR', 'umap', 'plotly', 'statVisual', 'GSVA'))"
 
 
 # Install Bioconductor packages
@@ -51,6 +51,9 @@ RUN R -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages
 # Install 'remotes' package and use it to install 'omnideconv/immunedeconv' from GitHub
 RUN R -e "install.packages('remotes')" \   
   && R -e "remotes::install_github('omnideconv/immunedeconv')"
+
+# Install preprocessCore with specific configuration
+RUN R -e "BiocManager::install('preprocessCore', configure.args = c(preprocessCore = '--disable-threading'), force = TRUE, update = TRUE, type = 'source')"
 
 # Set the Shiny port and host
 RUN echo "local(options(shiny.port = 3838, shiny.host = '0.0.0.0'))"
