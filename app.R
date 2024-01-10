@@ -51,6 +51,8 @@ library(umap)
 library(plotly)
 library(statVisual)
 library(svglite)
+library(tabula)
+library(folio)
 # BioConductor
 library(sva)
 library(preprocessCore)#
@@ -107,7 +109,9 @@ MouseToHuman <- function(data,conv,gene_col = TRUE) {
   return(data)
 }
 
-
+is_outlier <- function(x) {
+  return(x < quantile(x, 0.25) - 1.5 * IQR(x) | x > quantile(x, 0.75) + 1.5 * IQR(x))
+}
 
 
 
@@ -151,17 +155,17 @@ ui <-
                                           shiny::column(8,
                                                         shiny::fileInput("uncorrected_matrix_input",
                                                                          "Matrix for Batch Correction"
-                                                                         )
-                                                        ),
+                                                        )
+                                          ),
                                           ## Deliminator for input matrix
                                           shiny::column(2, style = 'padding-left:2px;padding-right:2px',
                                                         shiny::selectInput("matrix_delim", "Deliminator",
                                                                            c("Tab" = '\t',"Comma" = ',', "Space" = ' ',"Semicolon" = ';', "Colon" = ':')
-                                                                           )
-                                                        ),
+                                                        )
+                                          ),
                                           shiny::column(2, style = "margin-top:15px",
                                                         shiny::radioButtons("HumanOrMouse",NULL,c("Human","Mouse"))
-                                                        )
+                                          )
                                         ),
                                         # Need to log?
                                         shiny::fluidRow(
@@ -169,20 +173,20 @@ ui <-
                                                         shiny::checkboxInput("RawCountCheck", "Raw counts input matrix"),
                                                         conditionalPanel(condition = "input.RawCountCheck",
                                                                          div(selectInput("RawCountNorm","Normalize Raw Counts By:",
-                                                                                     c("No Normalization" = "none","TMM" = "TMM","Upper Quartile" = "upperquartile")),
+                                                                                         c("No Normalization" = "none","TMM" = "TMM","Upper Quartile" = "upperquartile")),
                                                                              style = "margin-top:-10px")
-                                                                         )
-                                                        ),
-                                          shiny::column(2, style = "margin-top:-15px",
-                                                        shiny::checkboxInput("Log_Choice","Log2+1", value = T)
-                                                        ),
-                                          shiny::column(2, style = "margin-top:-25px",
-                                                        numericInput("SeedSet","Set Seed:", value = 101, min = 1, step = 1)
-                                                        ),
-                                          shiny::column(4,
-                                                        actionButton("UseExpData","Load Example Data")
                                                         )
                                           ),
+                                          shiny::column(2, style = "margin-top:-15px",
+                                                        shiny::checkboxInput("Log_Choice","Log2+1", value = T)
+                                          ),
+                                          shiny::column(2, style = "margin-top:-25px",
+                                                        numericInput("SeedSet","Set Seed:", value = 101, min = 1, step = 1)
+                                          ),
+                                          shiny::column(4,
+                                                        actionButton("UseExpData","Load Example Data")
+                                          )
+                                        ),
                                         div(hr(),style = "margin-top:-20px;margin-bottom:-10px"),
                                         h3("Meta Data Parameters"),
                                         # Batch information in colnames?
@@ -201,7 +205,7 @@ ui <-
                                         fluidRow(
                                           column(12, style = "margin-top:-20px",
                                                  shiny::uiOutput("rendInit_Batch_Select")
-                                                 )
+                                          )
                                         )
                                       ),
                                       ### Main ---------------------------------
@@ -227,104 +231,104 @@ ui <-
                                                           shiny::fluidRow(
                                                             shiny::column(1,
                                                                           h2("1)")
-                                                                          ),
+                                                            ),
                                                             shiny::column(8,
                                                                           uiOutput("rendbatch_correction_method"),
-                                                                          ),
+                                                            ),
                                                             shiny::column(3, style = "margin-top:10px",
                                                                           uiOutput("rendQuantNorm")
-                                                                          )
-                                                            ),
+                                                            )
+                                                          ),
                                                           ##### Limma ----------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'Limma'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(10,
                                                                                                   shiny::column(6,
                                                                                                                 shiny::uiOutput("batch1_selection_limma")
-                                                                                                                ),
+                                                                                                  ),
                                                                                                   shiny::column(6,
                                                                                                                 shiny::uiOutput("batch2_selection_limma")
-                                                                                                                )
-                                                                                                  )
-                                                                                    ),
-                                                                                  shiny::fluidRow(
-                                                                                    shiny::column(1,
-                                                                                                  h2("3)")
-                                                                                                  ),
-                                                                                    shiny::column(11,
-                                                                                                  shiny::uiOutput("covariate_choices_limma")
                                                                                                   )
                                                                                     )
                                                                                   ),
+                                                                                  shiny::fluidRow(
+                                                                                    shiny::column(1,
+                                                                                                  h2("3)")
+                                                                                    ),
+                                                                                    shiny::column(11,
+                                                                                                  shiny::uiOutput("covariate_choices_limma")
+                                                                                    )
+                                                                                  )
+                                                          ),
                                                           ##### ComBat ----------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'ComBat'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(7,
                                                                                                   shiny::uiOutput("batch_selection_ComBat")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(4, style = "margin-top:20px",
                                                                                                   shiny::checkboxInput("combat_parametric", "Parametric?", value = TRUE)
-                                                                                                  )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### Mean Centering ----------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'Mean Centering'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(11,
                                                                                                   shiny::uiOutput("batch_selection_mean_centering")
-                                                                                                  )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### ComBatseq ----------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'ComBatseq'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(11,
                                                                                                   shiny::uiOutput("batch1_selection_ComBatseq")
-                                                                                                  )
-                                                                                    ),
+                                                                                    )
+                                                                                  ),
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("3)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(11,
                                                                                                   shiny::uiOutput("covariate_choices_ComBatseq")
-                                                                                                  )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### Harman -------------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'Harman'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(10,
                                                                                                   shiny::column(6,
                                                                                                                 shiny::uiOutput("batch_selection_harman")
-                                                                                                                ),
+                                                                                                  ),
                                                                                                   shiny::column(6,
                                                                                                                 shiny::uiOutput("treatment_selection_harman")
-                                                                                                                )
                                                                                                   )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### RUVg -------------------------------
                                                           conditionalPanel(condition = "input.batch_correction_method == 'RUVg'",
                                                                            shiny::fluidRow(
                                                                              shiny::column(1,
                                                                                            h2("2)")
-                                                                                           ),
+                                                                             ),
                                                                              shiny::column(11,
                                                                                            selectInput(
                                                                                              "RUVg_housekeeping_selection",
@@ -332,47 +336,47 @@ ui <-
                                                                                              c("Eisenberg", "Lin500", "HSIAO", "UserInput")),
                                                                                            conditionalPanel(condition = "input.RUVg_housekeeping_selection == 'UserInput'",
                                                                                                             fileInput("RUVg_user_control_genes", "Please Provide List of Control Genes"))
-                                                                                           )
-                                                                             ),
+                                                                             )
+                                                                           ),
                                                                            fluidRow(
                                                                              column(4, style = 'padding-right:0px;',
                                                                                     numericInput("RUVg_estimate_factors","Factors to Estimate",
                                                                                                  value = 2,min = 1,max = 10,step = 1)
-                                                                                    ),
+                                                                             ),
                                                                              column(4,
                                                                                     numericInput("RUVg_drop_factors","Factors to Drop",
                                                                                                  value = 0,min = 0,max = 9,step = 1, width = "95%")
-                                                                                    ),
+                                                                             ),
                                                                              column(4, style = 'padding-left:0px',
                                                                                     selectInput("RUVg_tolerance","RUVg Tolerance",
-                                                                                      c(1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10),selected = 1e-8)
-                                                                                    )
-                                                                             ),
+                                                                                                c(1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10),selected = 1e-8)
+                                                                             )
+                                                                           ),
                                                                            fluidRow(
                                                                              column(5,
                                                                                     checkboxInput("RUVg_mean_centered","Mean Centered",value = FALSE)
-                                                                                    ),
+                                                                             ),
                                                                              column(4,
                                                                                     checkboxInput("RUVg_rounded","Rounded",value = FALSE)
-                                                                                    )
                                                                              )
-                                                                           ),
+                                                                           )
+                                                          ),
                                                           ##### SVA --------------------------------
                                                           shiny::conditionalPanel(condition = "input.batch_correction_method == 'SVA'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(1,
                                                                                                   h2("2)")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(10,
                                                                                                   shiny::column(6,
                                                                                                                 shiny::selectInput("svaMethod_bc","Method",c("be","leek"))
-                                                                                                                ),
+                                                                                                  ),
                                                                                                   shiny::column(6,
                                                                                                                 shiny::uiOutput("SVA_variable_of_interest_bc")
-                                                                                                                )
                                                                                                   )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           div(hr(),style = "margin-top:-20px;margin-bottom:-10px"),
                                                           #### Plot Inputs ------------------------------------
                                                           ##### PCA Plot ------------------------------------
@@ -386,26 +390,26 @@ ui <-
                                                                                   shiny::conditionalPanel(condition = "input.PCA_type == 'Cluster Annotation'",
                                                                                                           shiny::numericInput("cluster_number","Number of Clusters",
                                                                                                                               value = 2,step = 1,min = 1, width = "50%")
-                                                                                                          )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### PCA MC ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'pca_mc'",
                                                                                   shiny::h3("Multiple Component PCA Parameters"),
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(6,
                                                                                                   shiny::uiOutput("PCA_mc_color_choice")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(6,
                                                                                                   shiny::numericInput("PCA_mc_slider","Number of PCs",
                                                                                                                       value = 5,step = 1,min = 1)
-                                                                                                  )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### PCA Details ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'pca_dt'",
                                                                                   shiny::h3("PCA Detail Parameters"),
                                                                                   shiny::uiOutput("PCA_factors_choices")
-                                                                                  ),
+                                                          ),
                                                           ##### UMAP ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'umap'",
                                                                                   shiny::h3("UMAP Parameters"),
@@ -413,14 +417,14 @@ ui <-
                                                                                     shiny::column(4,
                                                                                                   selectInput("UMAPmetricSelec","Metric:",
                                                                                                               choices = c("euclidean","manhattan","cosine","pearson","pearson2","hamming","correlation"))
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(4,
                                                                                                   numericInput("UMAPminDist","Min Distance:", value = 0.1,step = 0.05, min = 0)
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(4,
                                                                                                   numericInput("UMAPnnb","N Neighbors:", value = 15,step = 1, min = 5, max = 50)
-                                                                                                  )
-                                                                                    ),
+                                                                                    )
+                                                                                  ),
                                                                                   selectInput("UMAPFeatureCategory","Select Feature Type:",
                                                                                               c("Meta Features","Matrix Features","PCA Projections","Immune Deconvolution Features","Gene Set Pathways")),
                                                                                   uiOutput("rendUMAPImmuneDeconvMethods"),
@@ -429,41 +433,62 @@ ui <-
                                                                                                             column(9, style = 'padding-right:2px;',
                                                                                                                    selectizeInput("UMAPFeatSelection", label = "Select Feature:", choices = NULL,
                                                                                                                                   multiple = F, selected = 1,width = "100%")
-                                                                                                                   ),
+                                                                                                            ),
                                                                                                             column(3, style = 'padding-left:2px;',
                                                                                                                    selectInput("UMAPlogOpt","Log:", choices = c("No Log","Log2","Log2+1","Log10","Log10+1"))
-                                                                                                                   )
                                                                                                             )
-                                                                                                          ),
+                                                                                                          )
+                                                                                  ),
                                                                                   shiny::conditionalPanel(condition = "input.UMAPFeatureCategory == 'Gene Set Pathways'",
                                                                                                           selectInput("UMAPGeneSetCat","Gene Set Database:",choices = unique(geneset_df[,1])),
                                                                                                           div(DT::dataTableOutput("UMAPGeneSetTableUI"), style = "font-size:10px")
-                                                                                                          )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### Cluster ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main'",
                                                                                   shiny::h3("Cluster Parameters"),
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(6,
                                                                                                   numericInput("cluster_n_MV_features","Top Most Variable Features:",
-                                                                                                               value = 1000)
-                                                                                                  ),
+                                                                                                               value = 2000)
+                                                                                    ),
                                                                                     shiny::column(6,
                                                                                                   selectInput("VarianceMeasure", "Select Variance Measure:",
                                                                                                               choices = c("MAD","CV","VAR"))
-                                                                                                  )
+                                                                                    )
                                                                                   )
                                                           ),
                                                           ##### Heatmap ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'heatmap'",
                                                                                   div(shiny::h3("Heatmap Parameters"), style = "margin-top:-20px"),
-                                                                                  uiOutput("rendHeatmapAnnoSel")
+                                                                                  shiny::fluidRow(
+                                                                                    shiny::column(6,
+                                                                                                  selectInput("ClusterMethodHeat","Cluster Method:",
+                                                                                                              choices = c("ward.D2","ward.D", "complete","single","average","mcquitty","median","centroid"))
+                                                                                                  ),
+                                                                                    shiny::column(6,
+                                                                                                  uiOutput("rendHeatmapAnnoSel")
+                                                                                                  )
+                                                                                  )
+                                                          ),
+                                                          ##### Cluster info ------------------------------------
+                                                          shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'clinfo'",
+                                                                                  shiny::fluidRow(
+                                                                                    shiny::column(6,
+                                                                                                  selectInput("ClusterMethod","Cluster Method:",
+                                                                                                              choices = c("ward.D2","ward.D", "complete","single","average","mcquitty","median","centroid"))
+                                                                                    ),
+                                                                                    shiny::column(6,
+                                                                                                  numericInput("NumOfCluster","Number of Clusters:",value = 3,min = 1,step = 1)
+                                                                                    )
+                                                                                  ),
+                                                                                  shiny::checkboxInput("barPfill","Fill Bars as Percentage",value = F)
                                                           ),
                                                           ##### RLE ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'rle'",
                                                                                   shiny::h3("RLE Parameters"),
                                                                                   shiny::uiOutput("batch_choices_RLE")
-                                                                                  ),
+                                                          ),
                                                           ##### Exp Var ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'exp_var'",
                                                                                   shiny::h3("Explanatory Variables Parameters"),
@@ -472,23 +497,23 @@ ui <-
                                                                                                             shiny::column(6,
                                                                                                                           numericInput("pvcacluster_n_MV_features","Top Most Variable Features:",
                                                                                                                                        value = 20000)
-                                                                                                                          ),
+                                                                                                            ),
                                                                                                             shiny::column(6,
                                                                                                                           selectInput("pvcaVarianceMeasure", "Select Variance Measure:",
                                                                                                                                       choices = c("MAD","CV","VAR"))
-                                                                                                                          )
                                                                                                             )
-                                                                                                          ),
+                                                                                                          )
+                                                                                  ),
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(9,
                                                                                                   shiny::uiOutput("variable_choices_EV")
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(3, style = "padding-left:2px",
                                                                                                   uiOutput("rendExpPlotLog"),
                                                                                                   uiOutput("rendpvcaPct")
-                                                                                                  )
                                                                                     )
-                                                                                  ),
+                                                                                  )
+                                                          ),
                                                           ##### SVA ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'sva'",
                                                                                   shiny::h3("SVA Parameters"),
@@ -496,12 +521,12 @@ ui <-
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(6,
                                                                                                   shiny::selectInput("svaMethod","Method",c("leek","be"))
-                                                                                                  ),
+                                                                                    ),
                                                                                     shiny::column(6,
                                                                                                   shiny::numericInput("SVAvarNum","Number of Variables",
                                                                                                                       value = 300,min = 0, step =1)
-                                                                                                  )
-                                                                                    ),
+                                                                                    )
+                                                                                  ),
                                                                                   shiny::h4("Download Surrogate Variables"),
                                                                                   shiny::fluidRow(
                                                                                     column(6,
@@ -511,7 +536,7 @@ ui <-
                                                                                            shiny::downloadButton("dnldsave_SVA_surrogate_variables","Dowload Meta with SVA")
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### Box Plot ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'box'",
                                                                                   style = "overflow-y:scroll;overflow-x:hidden;max-height:70vh;position:relative;",
@@ -527,9 +552,9 @@ ui <-
                                                                                       max-height: 102px;
                                                                                       overflow-y: auto;
                                                                                       }'
-                                                                                      )
-                                                                                      )
-                                                                                    ),
+                                                                                    )
+                                                                                    )
+                                                                                  ),
                                                                                   selectInput("BPFeatureCategory","Select Feature Type:",
                                                                                               c("Matrix Features","Meta Features","PCA Projections","Immune Deconvolution Features","Gene Set Pathways")),
                                                                                   uiOutput("rendImmuneDeconvMethods"),
@@ -538,47 +563,47 @@ ui <-
                                                                                                             column(9, style = 'padding-right:2px;',
                                                                                                                    selectizeInput("BPFeatSelection", label = "Select Feature:", choices = NULL,
                                                                                                                                   multiple = F, selected = 1,width = "100%")
-                                                                                                                   ),
+                                                                                                            ),
                                                                                                             column(3, style = 'padding-left:2px;',
                                                                                                                    selectInput("BPlogOpt","Log:", choices = c("No Log","Log2","Log2+1","Log10","Log10+1"))
-                                                                                                                   )
                                                                                                             )
-                                                                                                          ),
+                                                                                                          )
+                                                                                  ),
                                                                                   shiny::conditionalPanel(condition = "input.BPFeatureCategory == 'Gene Set Pathways'",
                                                                                                           selectInput("BPGeneSetCat","Gene Set Database:",choices = c(unique(geneset_df[,1]),"User Upload")),
                                                                                                           shiny::conditionalPanel(condition = "input.BPGeneSetCat == 'User Upload'",
                                                                                                                                   fileInput("UserGeneset","Upload Geneset",
                                                                                                                                             accept = c(".txt",".tsv",".csv",".zip",".RData",".gmt"))
-                                                                                                                                  ),
-                                                                                                          div(DT::dataTableOutput("GeneSetTableUI"), style = "font-size:10px")
                                                                                                           ),
+                                                                                                          div(DT::dataTableOutput("GeneSetTableUI"), style = "font-size:10px")
+                                                                                  ),
                                                                                   fluidRow(
                                                                                     column(5, style = 'padding-right:2px;',
                                                                                            selectInput("BPplotstatComp","Stat Test Method:",
                                                                                                        choices = c("none","wilcox.test","t.test","kruskal.test","anova"))
-                                                                                           ),
+                                                                                    ),
                                                                                     column(4, style = 'padding-left:4px;padding-right:4px;',
                                                                                            checkboxInput("BPplotsampledots","Include Dot Annotation", value = F)
-                                                                                           ),
+                                                                                    ),
                                                                                     column(3, style = 'padding-left:4px;',
                                                                                            numericInput("BPplotDotSize","Dot Size:", value = 2, step = 0.25)
-                                                                                           )
-                                                                                    ),
+                                                                                    )
+                                                                                  ),
                                                                                   fluidRow(
                                                                                     column(5, style = 'padding-right:2px;',
                                                                                            selectInput("BPplotXaxOrder","X-Axis Group Order",
                                                                                                        choices = c("Ascending","Descending","Not Specificed"))
-                                                                                           ),
+                                                                                    ),
                                                                                     column(4, style = 'padding-left:4px;padding-right:4px;',
                                                                                            checkboxInput("BPremoveSingles","Remove groups 1 or less samples", value = T)
-                                                                                           ),
+                                                                                    ),
                                                                                     column(3, style = 'padding-left:4px;',
                                                                                            checkboxInput("BPflipBP","Flip Axis", value = F),
                                                                                            radioButtons("BPorViolin",NULL,choices = c("Box Plot","Violin Plot"), selected = "Box Plot")
-                                                                                           )
                                                                                     )
+                                                                                  )
                                                           )
-                                                          ),
+                                          ),
                                           #### Figure Params ------------------------------------
                                           shiny::tabPanel("Figure Settings",
                                                           ##### PCA ------------------------------------
@@ -592,7 +617,7 @@ ui <-
                                                                                     ),
                                                                                     column(6,
                                                                                            numericInput("PCAdotSize","Dot Size",value = 5)
-                                                                                           )
+                                                                                    )
                                                                                   ),
                                                                                   h4("Figure Download Parameters"),
                                                                                   fluidRow(
@@ -606,7 +631,7 @@ ui <-
                                                                                            selectInput("pcaUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### PCA MC ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'pca_mc'",
                                                                                   p(),
@@ -622,7 +647,7 @@ ui <-
                                                                                            selectInput("pca_mcUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### PCA Details ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'pca_dt'",
                                                                                   p(),
@@ -632,16 +657,16 @@ ui <-
                                                                                     column(4,
                                                                                            numericInput("pcaDetAxisTkSize","Axis Tick:",
                                                                                                         value = 14, step = 1)
-                                                                                           ),
+                                                                                    ),
                                                                                     column(4,
                                                                                            numericInput("pcaDetAxisTtSize","Axis Title:",
                                                                                                         value = 16, step = 1)
-                                                                                           ),
+                                                                                    ),
                                                                                     column(4,
                                                                                            numericInput("pcaDetLabelSize","Bar Label:",
                                                                                                         value = 4.5, step = 0.5)
-                                                                                           )
-                                                                                    ),
+                                                                                    )
+                                                                                  ),
                                                                                   h4("Figure Download Parameters"),
                                                                                   fluidRow(
                                                                                     column(4,
@@ -654,7 +679,7 @@ ui <-
                                                                                            selectInput("pca_dtUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### UMAP ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'pca_main' & input.PCA_main_pan == 'umap'",
                                                                                   p(),
@@ -684,7 +709,7 @@ ui <-
                                                                                            selectInput("umapUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### Cluster ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'cluster'",
                                                                                   p(),
@@ -700,7 +725,7 @@ ui <-
                                                                                            selectInput("cluster_mainUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### Heatmap ---------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'heatmap'",
                                                                                   p(),
@@ -715,7 +740,34 @@ ui <-
                                                                                            numericInput("heatmapWidth","Width (in)",value = 10)
                                                                                     )
                                                                                   )
+                                                          ),
+                                                          ##### Cluster Information ---------------------------
+                                                          shiny::conditionalPanel("input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'clinfo'",
+                                                                                  p(),
+                                                                                  h3("Bar Plot Figure Parameters"),
+                                                                                  fluidRow(
+                                                                                    column(6,
+                                                                                           numericInput("barPAxisTkSize","Axis Tick Font:",
+                                                                                                        value = 12, step = 1)
+                                                                                    ),
+                                                                                    column(6,
+                                                                                           numericInput("barPAxisTtSize","Axis Title Font:",
+                                                                                                        value = 14, step = 1)
+                                                                                    )
                                                                                   ),
+                                                                                  h4("Figure Download Parameters"),
+                                                                                  fluidRow(
+                                                                                    column(4,
+                                                                                           numericInput("barPHeight","Height",value = 8)
+                                                                                    ),
+                                                                                    column(4,
+                                                                                           numericInput("barPWidth","Width",value = 10)
+                                                                                    ),
+                                                                                    column(4,
+                                                                                           selectInput("barPUnits","Units",choices = c("in","cm","mm","px"))
+                                                                                    )
+                                                                                  )
+                                                          ),
                                                           ##### RLE ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'rle'",
                                                                                   p(),
@@ -731,7 +783,7 @@ ui <-
                                                                                            selectInput("rleUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### Exp Var ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'exp_var'",
                                                                                   p(),
@@ -747,7 +799,7 @@ ui <-
                                                                                            selectInput("exp_varUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### PVCA ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'pvca'",
                                                                                   p(),
@@ -779,7 +831,7 @@ ui <-
                                                                                            selectInput("svaUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  ),
+                                                          ),
                                                           ##### Box Plot ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'box'",
                                                                                   p(),
@@ -830,8 +882,8 @@ ui <-
                                                                                            selectInput("BPUnits","Units",choices = c("in","cm","mm","px"))
                                                                                     )
                                                                                   )
-                                                                                  )
-                                                          ),
+                                                          )
+                                          ),
 
                                           #### File Export ------------------------------------
                                           shiny::tabPanel("Zip File Export",
@@ -841,7 +893,7 @@ ui <-
                                                             outputId = "download_btn",
                                                             label = "Download All Saved Files as Zip",
                                                             icon = icon("file-download")
-                                                            ),
+                                                          ),
                                                           shiny::p(),
                                                           pickerInput(
                                                             "select_save_files",
@@ -849,499 +901,584 @@ ui <-
                                                             list.files(temp_directory),
                                                             options = list(`actions-box` = TRUE),
                                                             multiple = TRUE
-                                                            )
                                                           )
                                           )
-                                        ),
+                                        )
+                                      ),
                                       ### Main ---------------------------------
-                                        mainPanel(
-                                          shiny::tabsetPanel(
-                                            id = "uncorrected_panel",
-                                            #### Matrix ---------------------------------
-                                            shiny::tabPanel(
-                                              "Matrix",
-                                              shiny::p(),
-                                              shiny::fluidRow(
-                                                shiny::column(6,
-                                                              shiny::h3("Uncorrected Matrix"),
-                                                              DT::dataTableOutput("uncorrected_matrix_output"),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_uncorrected_matrix", "Add to Zip File Export")
+                                      mainPanel(
+                                        shiny::tabsetPanel(
+                                          id = "uncorrected_panel",
+                                          #### Matrix ---------------------------------
+                                          shiny::tabPanel(
+                                            "Matrix",
+                                            shiny::p(),
+                                            shiny::fluidRow(
+                                              shiny::column(6,
+                                                            shiny::h3("Uncorrected Matrix"),
+                                                            DT::dataTableOutput("uncorrected_matrix_output"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_matrix", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     shiny::downloadButton("dnldsave_uncorrected_matrix","Dowload Single Table")
+                                                              )
+                                                            )
+                                              ),
+                                              shiny::column(6,
+                                                            shiny::h3("Batch Corrected Matrix"),
+                                                            DT::dataTableOutput("corrected_matrix"),
+                                                            p(),
+                                                            shiny::uiOutput("rendsave_corrected_matrix")
+                                              )
+                                            ),
+                                            value = "mat"
+                                          ),
+                                          #### PCA -------------------------------------
+                                          shiny::tabPanel(
+                                            "PCA",
+                                            p(),
+                                            tabsetPanel(
+                                              id = "PCA_main_pan",
+                                              ##### PCA Plot ---------------------------------
+                                              shiny::tabPanel(
+                                                "PCA Plot",
+                                                p(),
+                                                shiny::fluidRow(
+                                                  shiny::column(6,
+                                                                shiny::h3("Uncorrected PCA"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotlyOutput("uncorrected_PCA")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_uncorrected_PCA_plot","Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         shiny::downloadButton("dnldsave_uncorrected_PCA_plot","Dowload Single Plot")
+                                                                  )
+                                                                )
+                                                  ),
+                                                  shiny::column(6,
+                                                                shiny::h3("Batch Corrected PCA"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotlyOutput("corrected_PCA")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_corrected_PCA_plot", "Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         downloadButton("dnldsave_corrected_PCA_plot","Dowload Single Plot")
+                                                                  )
+                                                                )
+                                                  )
+                                                ),
+                                                value = "pca"
+                                              ),
+                                              ##### PCA MC ---------------------------------
+                                              shiny::tabPanel(
+                                                "Multiple Components PCA",
+                                                shiny::p(),
+                                                shiny::fluidRow(
+                                                  shiny::column(6,
+                                                                shiny::h3("Uncorrected Multiple Components PCA"),
+                                                                shinycssloaders::withSpinner( shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PCA_multiple_components")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_uncorrected_PCA_mc_plot","Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         downloadButton("dnldsave_uncorrected_PCA_mc_plot","Dowload Single Plot")
+                                                                  )
+                                                                )
+
+                                                  ),
+                                                  shiny::column(6,
+                                                                shiny::h3("Batch Corrected Multiple Components PCA"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PCA_multiple_components")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_corrected_PCA_mc_plot", "Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         downloadButton("dnldsave_corrected_PCA_mc_plot","Dowload Single Plot")
+                                                                  )
+                                                                )
+
+                                                  )
+                                                ),
+                                                value = "pca_mc"),
+                                              ##### PCA Details ---------------------------------
+                                              shiny:: tabPanel(
+                                                "PCA Details",
+                                                shiny::p(),
+                                                shiny::fluidRow(
+                                                  shiny::column(6,
+                                                                shiny::h3("Uncorrected PCA Details"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_scree_plot")), type = 6),
+                                                                shiny::actionButton("save_uncorrected_scree_plot", "Save Uncorrected Scree Plot"),
+                                                                shiny::actionButton("save_uncorrected_PCA_components", "Save Uncorrected PCA Components"),
+                                                                shiny::p(),
+                                                                DT::dataTableOutput("uncorrected_contribution_table"),
+                                                                shiny::actionButton("save_uncorrected_contribution_table", "Save Uncorrected Contribution Table"),
+                                                                shiny::hr(),
+                                                                DT::dataTableOutput("uncorrected_contribution_counts"),
+                                                                shiny::actionButton("save_uncorrected_contribution_counts", "Save Uncorrected Contribution Counts")
+                                                  ),
+                                                  shiny::column(6,
+                                                                shiny::h3("Batch Corrected PCA Details"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_scree_plot")), type = 6),
+                                                                shiny::actionButton("save_corrected_scree_plot", "Save Corrected Scree Plot"),
+                                                                shiny::actionButton("save_corrected_PCA_components", "Save Corrected PCA Components"),
+                                                                shiny::p(),
+                                                                DT::dataTableOutput("corrected_contribution_table"),
+                                                                shiny::actionButton("save_corrected_contribution_table", "Save Corrected Contribution Table"),
+                                                                shiny::hr(),
+                                                                DT::dataTableOutput("corrected_contribution_counts"),
+                                                                shiny::actionButton("save_corrected_contribution_counts", "Save Corrected Contribution Counts")
+                                                  )
+                                                ),
+                                                value = "pca_dt"
+                                              ),
+                                              ##### UMAP ---------------------------------
+                                              shiny::tabPanel(
+                                                "UMAP",
+                                                shiny::p(),
+                                                shiny::fluidRow(
+                                                  shiny::column(6,
+                                                                shiny::h3("Uncorrected UMAP"),
+                                                                shinycssloaders::withSpinner( shinyjqui::jqui_resizable(plotly::plotlyOutput("uncorrected_UMAP")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_uncorrected_UMAP","Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         downloadButton("dnldsave_uncorrected_UMAP","Dowload Single Plot")
+                                                                  )
+                                                                )
+
+                                                  ),
+                                                  shiny::column(6,
+                                                                shiny::h3("Batch Corrected UMAP"),
+                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotly::plotlyOutput("corrected_UMAP")), type = 6),
+                                                                p(),
+                                                                shiny::fluidRow(
+                                                                  column(4, style = 'padding-right:0px;',
+                                                                         shiny::actionButton("save_corrected_UMAP", "Add to Zip File Export")
+                                                                  ),
+                                                                  column(4, style = 'padding-left:0px;',
+                                                                         downloadButton("dnldsave_corrected_UMAP","Dowload Single Plot")
+                                                                  )
+                                                                )
+
+                                                  )
+                                                ),
+                                                value = "umap"),
+                                            ),
+                                            value = "pca_main"
+                                          ),
+                                          #### Cluster ---------------------------------
+                                          ##### Cluster Plots ---------------------------------
+                                          shiny::tabPanel(
+                                            "Cluster Plots",
+                                            p(),
+                                            tabsetPanel(
+                                              id = "Cluster_main_pan",
+                                              tabPanel("Cluster Plots",
+                                                       p(),
+                                                       shiny::fluidRow(
+                                                         shiny::column(6,
+                                                                       shiny::h3("Uncorrected Cluster Plots"),
+                                                                       shiny::h4("Elbow Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_elbow_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_uncorrected_elbow_plot", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_uncorrected_elbow_plot","Dowload Single Plot")
+                                                                         )
                                                                        ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       shiny::downloadButton("dnldsave_uncorrected_matrix","Dowload Single Table")
-                                                                )
-                                                              )
-                                                ),
-                                                shiny::column(6,
-                                                              shiny::h3("Batch Corrected Matrix"),
-                                                              DT::dataTableOutput("corrected_matrix"),
-                                                              p(),
-                                                              shiny::uiOutput("rendsave_corrected_matrix")
-                                                )
-                                              ),
-                                              value = "mat"
-                                            ),
-                                            #### PCA -------------------------------------
-                                            shiny::tabPanel(
-                                              "PCA",
-                                              p(),
-                                              tabsetPanel(
-                                                id = "PCA_main_pan",
-                                                ##### PCA Plot ---------------------------------
-                                                shiny::tabPanel(
-                                                  "PCA Plot",
-                                                  p(),
-                                                  shiny::fluidRow(
-                                                    shiny::column(6,
-                                                                  shiny::h3("Uncorrected PCA"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotlyOutput("uncorrected_PCA")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_uncorrected_PCA_plot","Add to Zip File Export")
-                                                                           ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           shiny::downloadButton("dnldsave_uncorrected_PCA_plot","Dowload Single Plot")
-                                                                           )
-                                                                  )
-                                                    ),
-                                                    shiny::column(6,
-                                                                  shiny::h3("Batch Corrected PCA"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotlyOutput("corrected_PCA")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_corrected_PCA_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           downloadButton("dnldsave_corrected_PCA_plot","Dowload Single Plot")
-                                                                           )
-                                                                    )
-                                                                  )
-                                                    ),
-                                                  value = "pca"
-                                                ),
-                                                ##### PCA MC ---------------------------------
-                                                shiny::tabPanel(
-                                                  "Multiple Components PCA",
-                                                  shiny::p(),
-                                                  shiny::fluidRow(
-                                                    shiny::column(6,
-                                                                  shiny::h3("Uncorrected Multiple Components PCA"),
-                                                                  shinycssloaders::withSpinner( shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PCA_multiple_components")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_uncorrected_PCA_mc_plot","Add to Zip File Export")
-                                                                    ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           downloadButton("dnldsave_uncorrected_PCA_mc_plot","Dowload Single Plot")
-                                                                    )
-                                                                  )
-
-                                                    ),
-                                                    shiny::column(6,
-                                                                  shiny::h3("Batch Corrected Multiple Components PCA"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PCA_multiple_components")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_corrected_PCA_mc_plot", "Add to Zip File Export")
-                                                                    ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           downloadButton("dnldsave_corrected_PCA_mc_plot","Dowload Single Plot")
-                                                                    )
-                                                                  )
-
-                                                    )
-                                                  ),
-                                                  value = "pca_mc"),
-                                                ##### PCA Details ---------------------------------
-                                                shiny:: tabPanel(
-                                                  "PCA Details",
-                                                  shiny::p(),
-                                                  shiny::fluidRow(
-                                                    shiny::column(6,
-                                                                  shiny::h3("Uncorrected PCA Details"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_scree_plot")), type = 6),
-                                                                  shiny::actionButton("save_uncorrected_scree_plot", "Save Uncorrected Scree Plot"),
-                                                                  shiny::actionButton("save_uncorrected_PCA_components", "Save Uncorrected PCA Components"),
-                                                                  shiny::p(),
-                                                                  DT::dataTableOutput("uncorrected_contribution_table"),
-                                                                  shiny::actionButton("save_uncorrected_contribution_table", "Save Uncorrected Contribution Table"),
-                                                                  shiny::hr(),
-                                                                  DT::dataTableOutput("uncorrected_contribution_counts"),
-                                                                  shiny::actionButton("save_uncorrected_contribution_counts", "Save Uncorrected Contribution Counts")
-                                                    ),
-                                                    shiny::column(6,
-                                                                  shiny::h3("Batch Corrected PCA Details"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_scree_plot")), type = 6),
-                                                                  shiny::actionButton("save_corrected_scree_plot", "Save Corrected Scree Plot"),
-                                                                  shiny::actionButton("save_corrected_PCA_components", "Save Corrected PCA Components"),
-                                                                  shiny::p(),
-                                                                  DT::dataTableOutput("corrected_contribution_table"),
-                                                                  shiny::actionButton("save_corrected_contribution_table", "Save Corrected Contribution Table"),
-                                                                  shiny::hr(),
-                                                                  DT::dataTableOutput("corrected_contribution_counts"),
-                                                                  shiny::actionButton("save_corrected_contribution_counts", "Save Corrected Contribution Counts")
-                                                    )
-                                                  ),
-                                                  value = "pca_dt"
-                                                ),
-                                                ##### UMAP ---------------------------------
-                                                shiny::tabPanel(
-                                                  "UMAP",
-                                                  shiny::p(),
-                                                  shiny::fluidRow(
-                                                    shiny::column(6,
-                                                                  shiny::h3("Uncorrected UMAP"),
-                                                                  shinycssloaders::withSpinner( shinyjqui::jqui_resizable(plotly::plotlyOutput("uncorrected_UMAP")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_uncorrected_UMAP","Add to Zip File Export")
-                                                                    ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           downloadButton("dnldsave_uncorrected_UMAP","Dowload Single Plot")
-                                                                    )
-                                                                  )
-
-                                                    ),
-                                                    shiny::column(6,
-                                                                  shiny::h3("Batch Corrected UMAP"),
-                                                                  shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotly::plotlyOutput("corrected_UMAP")), type = 6),
-                                                                  p(),
-                                                                  shiny::fluidRow(
-                                                                    column(4, style = 'padding-right:0px;',
-                                                                           shiny::actionButton("save_corrected_UMAP", "Add to Zip File Export")
-                                                                    ),
-                                                                    column(4, style = 'padding-left:0px;',
-                                                                           downloadButton("dnldsave_corrected_UMAP","Dowload Single Plot")
-                                                                    )
-                                                                  )
-
-                                                    )
-                                                  ),
-                                                  value = "umap"),
-                                              ),
-                                              value = "pca_main"
-                                            ),
-                                            #### Cluster ---------------------------------
-                                            ##### Cluster Plots ---------------------------------
-                                            shiny::tabPanel(
-                                              "Cluster Plots",
-                                              p(),
-                                              tabsetPanel(
-                                                id = "Cluster_main_pan",
-                                                tabPanel("Cluster Plots",
-                                                         p(),
-                                                         shiny::fluidRow(
-                                                           shiny::column(6,
-                                                                         shiny::h3("Uncorrected Cluster Plots"),
-                                                                         shiny::h4("Elbow Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_elbow_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_uncorrected_elbow_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_uncorrected_elbow_plot","Dowload Single Plot")
-                                                                           )
+                                                                       shiny::hr(),
+                                                                       shiny::h4("Silhouette Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_silhouette_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_uncorrected_silhouette_plot", "Add to Zip File Export")
                                                                          ),
-                                                                         shiny::hr(),
-                                                                         shiny::h4("Silhouette Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_silhouette_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_uncorrected_silhouette_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_uncorrected_silhouette_plot","Dowload Single Plot")
-                                                                           )
-                                                                         ),
-                                                                         shiny::hr(),
-                                                                         shiny::h4("Dunn Index Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_dunn_index_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_uncorrected_dunn_index_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_uncorrected_dunn_index_plot","Dowload Single Plot")
-                                                                           )
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_uncorrected_silhouette_plot","Dowload Single Plot")
                                                                          )
-
+                                                                       ),
+                                                                       shiny::hr(),
+                                                                       shiny::h4("Dunn Index Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_dunn_index_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_uncorrected_dunn_index_plot", "Add to Zip File Export")
                                                                          ),
-                                                           shiny::column(6,
-                                                                         shiny::h3("Batch Corrected Cluster Plots"),
-                                                                         shiny::h4("Elbow Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_elbow_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_corrected_elbow_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_corrected_elbow_plot","Dowload Single Plot")
-                                                                           )
-                                                                         ),
-                                                                         shiny::hr(),
-                                                                         shiny::h4("Silhouette Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_silhouette_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_corrected_silhouette_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_corrected_silhouette_plot","Dowload Single Plot")
-                                                                           )
-                                                                         ),
-                                                                         shiny::hr(),
-                                                                         shiny::h4("Dunn Index Plot"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_dunn_index_plot", height = "250px")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_corrected_dunn_index_plot", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_corrected_dunn_index_plot","Dowload Single Plot")
-                                                                           )
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_uncorrected_dunn_index_plot","Dowload Single Plot")
                                                                          )
+                                                                       )
 
-                                                                         )
-                                                           ),
-                                                         value = "cluster"),
-                                                ##### Heatmaps ---------------------------------
-                                                tabPanel("Heatmaps",
-                                                         p(),
-                                                         shiny::fluidRow(
-                                                           shiny::column(6,
-                                                                         shiny::h3("Uncorrected Heatmap"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_heatmap", height = "700px", width = "100%")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_uncorrected_heatmap", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_uncorrected_heatmap","Dowload Single Plot")
-                                                                           )
-                                                                         )
-
-                                                                         ),
-                                                           shiny::column(6,
-                                                                         shiny::h3("Batch Corrected Heatmap"),
-                                                                         shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_heatmap", height = "700px", width = "100%")), type = 6),
-                                                                         p(),
-                                                                         shiny::fluidRow(
-                                                                           column(4, style = 'padding-right:0px;',
-                                                                                  shiny::actionButton("save_corrected_heatmap", "Add to Zip File Export")
-                                                                           ),
-                                                                           column(4, style = 'padding-left:0px;',
-                                                                                  downloadButton("dnldsave_corrected_heatmap","Dowload Single Plot")
-                                                                           )
-                                                                         )
-
-                                                           )
                                                          ),
-                                                         value = "heatmap"
+                                                         shiny::column(6,
+                                                                       shiny::h3("Batch Corrected Cluster Plots"),
+                                                                       shiny::h4("Elbow Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_elbow_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_corrected_elbow_plot", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_corrected_elbow_plot","Dowload Single Plot")
+                                                                         )
+                                                                       ),
+                                                                       shiny::hr(),
+                                                                       shiny::h4("Silhouette Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_silhouette_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_corrected_silhouette_plot", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_corrected_silhouette_plot","Dowload Single Plot")
+                                                                         )
+                                                                       ),
+                                                                       shiny::hr(),
+                                                                       shiny::h4("Dunn Index Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_dunn_index_plot", height = "250px")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_corrected_dunn_index_plot", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_corrected_dunn_index_plot","Dowload Single Plot")
+                                                                         )
+                                                                       )
+
                                                          )
+                                                       ),
+                                                       value = "cluster"),
+                                              ##### Heatmaps ---------------------------------
+                                              tabPanel("Heatmaps",
+                                                       p(),
+                                                       shiny::fluidRow(
+                                                         shiny::column(6,
+                                                                       shiny::h3("Uncorrected Heatmap"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_heatmap", height = "700px", width = "100%")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_uncorrected_heatmap", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_uncorrected_heatmap","Dowload Single Plot")
+                                                                         )
+                                                                       )
+
+                                                         ),
+                                                         shiny::column(6,
+                                                                       shiny::h3("Batch Corrected Heatmap"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_heatmap", height = "700px", width = "100%")), type = 6),
+                                                                       p(),
+                                                                       shiny::fluidRow(
+                                                                         column(4, style = 'padding-right:0px;',
+                                                                                shiny::actionButton("save_corrected_heatmap", "Add to Zip File Export")
+                                                                         ),
+                                                                         column(4, style = 'padding-left:0px;',
+                                                                                downloadButton("dnldsave_corrected_heatmap","Dowload Single Plot")
+                                                                         )
+                                                                       )
+
+                                                         )
+                                                       ),
+                                                       value = "heatmap"
                                               ),
-                                              value = "cluster_main"
+                                              ##### Cluster Info -----------------------------------
+                                              tabPanel("Cluster Information",
+                                                       p(),
+                                                       shiny::fluidRow(
+                                                         shiny::column(6,
+                                                                       h4("Uncorrected Bar Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")), type = 6),
+                                                                       h4("Uncorrected Average Heterogeneity and Evenness"),
+                                                                       tabsetPanel(
+                                                                         tabPanel("Heterogeneity",
+                                                                                  DT::dataTableOutput("uncorr_avg_het")
+                                                                         ),
+                                                                         tabPanel("Eveness",
+                                                                                  DT::dataTableOutput("uncorr_avg_evn")
+                                                                         )
+                                                                       ),
+                                                                       h4("Uncorrected Heterogeneity and Evenness"),
+                                                                       tabsetPanel(
+                                                                         tabPanel("Heterogeneity",
+                                                                                  div(DT::dataTableOutput("uncorr_het"), style = "overflow-X: scroll")
+                                                                         ),
+                                                                         tabPanel("Eveness",
+                                                                                  div(DT::dataTableOutput("uncorr_evn"), style = "overflow-X: scroll")
+                                                                         )
+                                                                       )
+                                                         ),
+                                                         shiny::column(6,
+                                                                       h4("Batch Corrected Bar Plot"),
+                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")), type = 6),
+                                                                       h4("Batch Corrected Average Heterogeneity and Evenness"),
+                                                                       tabsetPanel(
+                                                                         tabPanel("Heterogeneity",
+                                                                                  DT::dataTableOutput("corr_avg_het")
+                                                                         ),
+                                                                         tabPanel("Eveness",
+                                                                                  DT::dataTableOutput("corr_avg_evn")
+                                                                         )
+                                                                       ),
+                                                                       h4("Batch Corrected Heterogeneity and Evenness"),
+                                                                       tabsetPanel(
+                                                                         tabPanel("Heterogeneity",
+                                                                                  div(DT::dataTableOutput("corr_het"), style = "overflow-X: scroll")
+                                                                         ),
+                                                                         tabPanel("Eveness",
+                                                                                  div(DT::dataTableOutput("corr_evn"), style = "overflow-X: scroll")
+                                                                         )
+                                                                       )
+                                                         )
+                                                       ),
+                                                       h4("Meta Information with Cluster Data"),
+                                                       DT::dataTableOutput("ClusterInfoTab"),
+                                                       p(),
+                                                       shiny::fluidRow(
+                                                         column(2, style = 'padding-right:0px;',
+                                                                shiny::actionButton("save_ClusterInfoTab", "Add to Zip File Export")
+                                                         ),
+                                                         column(2, style = 'padding-left:0px;',
+                                                                downloadButton("dnldsave_ClusterInfoTab","Dowload Table")
+                                                         )
+                                                       ),
+                                                       value = "clinfo",
+                                              )
                                             ),
-                                            #### RLE ---------------------------------
-                                            shiny::tabPanel(
-                                              "Relative Log Expression Plot",
-                                              p(),
-                                              shiny::fluidRow(
-                                                shiny::column(6,
-                                                              shiny::h3("Uncorrected RLE Plot"),
-                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_RLE_plot")), type = 6),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_uncorrected_RLE_plot", "Save Uncorrected RLE Plot")
-                                                                ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_uncorrected_RLE_plot","Dowload Single Plot")
-                                                                )
-                                                              )
+                                            value = "cluster_main"
+                                          ),
+                                          #### RLE ---------------------------------
+                                          shiny::tabPanel(
+                                            "Relative Log Expression Plot",
+                                            p(),
+                                            shiny::fluidRow(
+                                              shiny::column(6,
+                                                            shiny::h3("Uncorrected RLE Plot"),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_RLE_plot")), type = 6),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_RLE_plot", "Save Uncorrected RLE Plot")
                                                               ),
-                                                shiny::column(6,
-                                                              shiny::h3("Batch Corrected RLE Plot"),
-                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_RLE_plot")), type = 6),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_corrected_RLE_plot", "Save Corrected RLE Plot")
-                                                                ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_corrected_RLE_plot","Dowload Single Plot")
-                                                                )
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_uncorrected_RLE_plot","Dowload Single Plot")
                                                               )
-
-                                                )
+                                                            )
                                               ),
-                                              value = "rle"
-                                            ),
-                                            #### Exp Var ---------------------------------
-                                            shiny::tabPanel(
-                                              "Explanatory Variables",
-                                              p(),
-                                              shiny::tabsetPanel(
-                                                id = "ExpVar_Plots",
-                                                ##### Exp Var ---------------------------------
-                                                shiny::tabPanel("Explanatory Variables Plot",
-                                                                shiny::fluidRow(
-                                                                  shiny::column(6,
-                                                                                shiny::h3("Uncorrected Explanatory Variables Plot"),
-                                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_EV_plot")), type = 6),
-                                                                                p(),
-                                                                                shiny::fluidRow(
-                                                                                  column(4, style = 'padding-right:0px;',
-                                                                                         shiny::actionButton("save_uncorrected_EV_plot", "Add to Zip File Export")
-                                                                                  ),
-                                                                                  column(4, style = 'padding-left:0px;',
-                                                                                         downloadButton("dnldsave_uncorrected_EV_plot","Dowload Single Plot")
-                                                                                  )
-                                                                                )),
-                                                                  shiny::column(6,
-                                                                                shiny::h3("Batch Corrected Explanatory Variables Plot"),
-                                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_EV_plot")), type = 6),
-                                                                                p(),
-                                                                                shiny::fluidRow(
-                                                                                  column(4, style = 'padding-right:0px;',
-                                                                                         shiny::actionButton("save_corrected_EV_plot", "Add to Zip File Export")
-                                                                                  ),
-                                                                                  column(4, style = 'padding-left:0px;',
-                                                                                         downloadButton("dnldsave_corrected_EV_plot","Dowload Single Plot")
-                                                                                  )
-                                                                                )
+                                              shiny::column(6,
+                                                            shiny::h3("Batch Corrected RLE Plot"),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_RLE_plot")), type = 6),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_corrected_RLE_plot", "Save Corrected RLE Plot")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_corrected_RLE_plot","Dowload Single Plot")
+                                                              )
+                                                            )
 
-                                                                  )
-                                                                ),
-                                                                value = "exp_plot"
-                                                                ),
-                                                ##### PVCA ---------------------------------
-                                                shiny::tabPanel("PVCA",
-                                                                shiny::fluidRow(
-                                                                  shiny::column(6,
-                                                                                shiny::h3("Uncorrected PVCA Plot"),
-                                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PVCA_plot")), type = 6),
-                                                                                p(),
-                                                                                shiny::fluidRow(
-                                                                                  column(4, style = 'padding-right:0px;',
-                                                                                         shiny::actionButton("save_uncorrected_pvca_plot", "Add to Zip File Export")
-                                                                                  ),
-                                                                                  column(4, style = 'padding-left:0px;',
-                                                                                         downloadButton("dnldsave_uncorrected_pvca_plot","Dowload Single Plot")
-                                                                                  )
-                                                                                )
+                                              )
+                                            ),
+                                            value = "rle"
+                                          ),
+                                          #### Exp Var ---------------------------------
+                                          shiny::tabPanel(
+                                            "Explanatory Variables",
+                                            p(),
+                                            shiny::tabsetPanel(
+                                              id = "ExpVar_Plots",
+                                              ##### Exp Var ---------------------------------
+                                              shiny::tabPanel("Explanatory Variables Plot",
+                                                              shiny::fluidRow(
+                                                                shiny::column(6,
+                                                                              shiny::h3("Uncorrected Explanatory Variables Plot"),
+                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_EV_plot")), type = 6),
+                                                                              p(),
+                                                                              shiny::fluidRow(
+                                                                                column(4, style = 'padding-right:0px;',
+                                                                                       shiny::actionButton("save_uncorrected_EV_plot", "Add to Zip File Export")
                                                                                 ),
-                                                                  shiny::column(6,
-                                                                                shiny::h3("Batch Corrected PVCA"),
-                                                                                shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PVCA_plot")), type = 6),
-                                                                                p(),
-                                                                                shiny::fluidRow(
-                                                                                  column(4, style = 'padding-right:0px;',
-                                                                                         shiny::actionButton("save_corrected_pvca_plot", "Add to Zip File Export")
-                                                                                  ),
-                                                                                  column(4, style = 'padding-left:0px;',
-                                                                                         downloadButton("dnldsave_corrected_pvca_plot","Dowload Single Plot")
-                                                                                  )
+                                                                                column(4, style = 'padding-left:0px;',
+                                                                                       downloadButton("dnldsave_uncorrected_EV_plot","Dowload Single Plot")
                                                                                 )
+                                                                              )),
+                                                                shiny::column(6,
+                                                                              shiny::h3("Batch Corrected Explanatory Variables Plot"),
+                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_EV_plot")), type = 6),
+                                                                              p(),
+                                                                              shiny::fluidRow(
+                                                                                column(4, style = 'padding-right:0px;',
+                                                                                       shiny::actionButton("save_corrected_EV_plot", "Add to Zip File Export")
+                                                                                ),
+                                                                                column(4, style = 'padding-left:0px;',
+                                                                                       downloadButton("dnldsave_corrected_EV_plot","Dowload Single Plot")
+                                                                                )
+                                                                              )
 
-                                                                  )
-                                                                ),
-                                                                value = "pvca")
-                                              ),
-                                              value = "exp_var"
-                                              ),
-                                            #### SVA ---------------------------------
-                                            shiny::tabPanel(
-                                              "SVA Analysis",
-                                              p(),
-                                              shiny::fluidRow(
-                                                shiny::column(6,
-                                                              shiny::h3("Uncorrected SVA Analysis"),
-                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_SVA_probability_density")), type = 6),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_uncorrected_SVA_probability_density", "Add to Zip File Export")
-                                                                ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_uncorrected_SVA_probability_density","Dowload Single Plot")
                                                                 )
                                                               ),
-                                                              p(),
-                                                              verbatimTextOutput("uncorrected_SVA_nsv_print"),
-                                                              ),
-                                                shiny::column(6,
-                                                              shiny::h3("Batch Corrected SVA Analysis"),
-                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_SVA_probability_density")), type = 6),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_corrected_SVA_probability_density", "Add to Zip File Export")
-                                                                ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_corrected_SVA_probability_density","Dowload Single Plot")
-                                                                )
-                                                              ),
-                                                              p(),
-                                                              verbatimTextOutput("corrected_SVA_nsv_print"),
-                                                              )
-                                                ),
-                                              value = "sva"
+                                                              value = "exp_plot"
                                               ),
-                                            #### Box Plot ---------------------------------
-                                            shiny::tabPanel(
-                                              "Box Plot",
-                                              p(),
-                                              shiny::fluidRow(
-                                                shiny::column(6,
-                                                              shiny::h3("Uncorrected Box Plot"),
-                                                              shiny::uiOutput("renduncorrected_Box_plot"),
-                                                              p(),
+                                              ##### PVCA ---------------------------------
+                                              shiny::tabPanel("PVCA",
                                                               shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_uncorrected_Box_plot", "Add to Zip File Export")
+                                                                shiny::column(6,
+                                                                              shiny::h3("Uncorrected PVCA Plot"),
+                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PVCA_plot")), type = 6),
+                                                                              p(),
+                                                                              shiny::fluidRow(
+                                                                                column(4, style = 'padding-right:0px;',
+                                                                                       shiny::actionButton("save_uncorrected_pvca_plot", "Add to Zip File Export")
+                                                                                ),
+                                                                                column(4, style = 'padding-left:0px;',
+                                                                                       downloadButton("dnldsave_uncorrected_pvca_plot","Dowload Single Plot")
+                                                                                )
+                                                                              )
                                                                 ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_uncorrected_Box_plot","Dowload Single Plot")
-                                                                )
-                                                              )),
-                                                shiny::column(6,
-                                                              shiny::h3("Batch Corrected Box Plot"),
-                                                              shiny::uiOutput("rendcorrected_Box_plot"),
-                                                              p(),
-                                                              shiny::fluidRow(
-                                                                column(4, style = 'padding-right:0px;',
-                                                                       shiny::actionButton("save_corrected_Box_plot", "Add to Zip File Export")
-                                                                ),
-                                                                column(4, style = 'padding-left:0px;',
-                                                                       downloadButton("dnldsave_corrected_Box_plot","Dowload Single Plot")
-                                                                )
-                                                              )
+                                                                shiny::column(6,
+                                                                              shiny::h3("Batch Corrected PVCA"),
+                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PVCA_plot")), type = 6),
+                                                                              p(),
+                                                                              shiny::fluidRow(
+                                                                                column(4, style = 'padding-right:0px;',
+                                                                                       shiny::actionButton("save_corrected_pvca_plot", "Add to Zip File Export")
+                                                                                ),
+                                                                                column(4, style = 'padding-left:0px;',
+                                                                                       downloadButton("dnldsave_corrected_pvca_plot","Dowload Single Plot")
+                                                                                )
+                                                                              )
 
-                                                )
+                                                                )
+                                                              ),
+                                                              value = "pvca")
+                                            ),
+                                            value = "exp_var"
+                                          ),
+                                          #### SVA ---------------------------------
+                                          shiny::tabPanel(
+                                            "SVA Analysis",
+                                            p(),
+                                            shiny::fluidRow(
+                                              shiny::column(6,
+                                                            shiny::h3("Uncorrected SVA Analysis"),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_SVA_probability_density")), type = 6),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_SVA_probability_density", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_uncorrected_SVA_probability_density","Dowload Single Plot")
+                                                              )
+                                                            ),
+                                                            p(),
+                                                            verbatimTextOutput("uncorrected_SVA_nsv_print"),
                                               ),
-                                              value = "box"
-                                            )
+                                              shiny::column(6,
+                                                            shiny::h3("Batch Corrected SVA Analysis"),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_SVA_probability_density")), type = 6),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_corrected_SVA_probability_density", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_corrected_SVA_probability_density","Dowload Single Plot")
+                                                              )
+                                                            ),
+                                                            p(),
+                                                            verbatimTextOutput("corrected_SVA_nsv_print"),
+                                              )
+                                            ),
+                                            value = "sva"
+                                          ),
+                                          #### Box Plot ---------------------------------
+                                          shiny::tabPanel(
+                                            "Box Plot",
+                                            p(),
+                                            shiny::fluidRow(
+                                              shiny::column(6,
+                                                            shiny::h3("Uncorrected Box Plot"),
+                                                            shiny::uiOutput("renduncorrected_Box_plot"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_Box_plot", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_uncorrected_Box_plot","Dowload Single Plot")
+                                                              )
+                                                            ),
+                                                            p(),
+                                                            DT::dataTableOutput("uncorrected_Box_plot_df"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_Box_plot_df", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_uncorrected_Box_plot_df","Dowload Table")
+                                                              )
+                                                            )
+                                              ),
+                                              shiny::column(6,
+                                                            shiny::h3("Batch Corrected Box Plot"),
+                                                            shiny::uiOutput("rendcorrected_Box_plot"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_corrected_Box_plot", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_corrected_Box_plot","Dowload Single Plot")
+                                                              )
+                                                            ),
+                                                            p(),
+                                                            DT::dataTableOutput("corrected_Box_plot_df"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_corrected_Box_plot_df", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_corrected_Box_plot_df","Dowload Table")
+                                                              )
+                                                            )
+
+                                              )
+                                            ),
+                                            value = "box"
                                           )
-                                          )
+                                        )
                                       )
                                     )
                     )
+  )
 
 
 # Read and Manipulate Input Files
@@ -1423,9 +1560,9 @@ server <- function(input, output, session) {
 
     req(input$uncorrected_matrix_input)
     uncorrected_matrix_read <- readr::read_delim(input$uncorrected_matrix_input$datapath,
-                                            delim = input$matrix_delim,
-                                            name_repair = "minimal",
-                                            na = c("", "NA", "N/A"))
+                                                 delim = input$matrix_delim,
+                                                 name_repair = "minimal",
+                                                 na = c("", "NA", "N/A"))
     uncorrected_matrix_read <- uncorrected_matrix_read[, !duplicated(colnames(uncorrected_matrix_read))]
     uncorrected_matrix(uncorrected_matrix_read)
     updateRadioButtons(session,"HumanOrMouse",selected = "Human")
@@ -2176,6 +2313,14 @@ server <- function(input, output, session) {
   })
 
   #### Cluster -----------------------------------------------------------------
+
+  observe({
+    updateSelectInput(session,"ClusterMethodHeat",selected = input$ClusterMethod)
+  })
+  observe({
+    updateSelectInput(session,"ClusterMethod",selected = input$ClusterMethodHeat)
+  })
+
   # uncorrected cluster analysis
   cluster_mv_features_uncorr_matrix <- reactive({
     withProgress(message = "Processing Uncorrected", value = 0, {
@@ -2189,8 +2334,11 @@ server <- function(input, output, session) {
       mad <- NULL
       var <- NULL
       cv <- NULL
+      if (!input$Log_Choice) {
+        mat <- log2(mat + 1)
+      }
       if (var_type == "MAD"){
-        mad <- suppressWarnings(apply(log2(mat + 1), 1, mad))
+        mad <- suppressWarnings(apply(mat, 1, mad))
         mad <- sort(mad, decreasing = T)
         mad <- head(mad, n = topN)
         out <- cbind(names(mad), mad[names(mad)], mat[names(mad),])
@@ -2198,7 +2346,7 @@ server <- function(input, output, session) {
         dataset <- mat[names(mad),]
       }
       else if (var_type == "VAR"){
-        var <- suppressWarnings(apply(log2(mat + 1), 1, var))
+        var <- suppressWarnings(apply(mat, 1, var))
         var <- sort(var, decreasing = T)
         var <- head(var, n = topN)
         out <- cbind(names(var), var[names(var)], mat[names(var),])
@@ -2206,13 +2354,27 @@ server <- function(input, output, session) {
         dataset <- mat[names(var),]
       }
       else if (var_type == "CV"){
-        cv <- suppressWarnings(apply(log2(mat + 1), 1, cv))
+        cv <- suppressWarnings(apply(mat, 1, cv))
         cv <- sort(cv, decreasing = T)
         cv <- head(cv, n = topN)
         out <- cbind(names(cv), cv[names(cv)], mat[names(cv),])
         colnames(out) <- c("Gene", "CV", colnames(mat))
         dataset <- mat[names(cv),]
       }
+
+      #zdataset <- apply(dataset, 1, scale)
+      #zdataset <- apply(zdataset, 1, rev)
+      #colnames(zdataset) <- names(dataset)
+      #dataset <- as.matrix(zdataset)
+      #dataset[is.na(dataset)] <- 0
+      #dataset = dataset[apply(dataset, 1, function(x) !all(x==0)),]
+      #dataset <- as.data.frame(dataset)
+      #dataset_old <- dataset
+
+      zdataset <- t(apply(dataset, 1, scale))
+      colnames(zdataset) <- names(dataset)
+      dataset <- as.data.frame(zdataset)
+
       dataset[,featColName] <- rownames(dataset)
       dataset <- dataset %>% dplyr::relocate(any_of(featColName))
       incProgress(0.5, detail = "Complete!")
@@ -2319,16 +2481,19 @@ server <- function(input, output, session) {
       colAnn <- heat_colAnn()
       HeatRowNames <- ifelse("Turn on Row Names" %in% input$HeatRowColNames,TRUE,FALSE)
       HeatColNames <- ifelse("Turn on Column Names" %in% input$HeatRowColNames,TRUE,FALSE)
+      clusterMethod <- input$ClusterMethodHeat
 
       uncorrected_matrix_heatmap <- as.matrix(cluster_mv_features_uncorr_matrix()[,-1])
       uncorrected_matrix_heatmap_cols <- colnames(uncorrected_matrix_heatmap)
       #uncorrected_matrix_heatmap <- as.matrix(uncorrected_numeric_matrix()[,-1])
       #uncorrected_matrix_heatmap <- as.matrix(log2(uncorrected_numeric_matrix()[,-1] + 1))
-      uncorrected_matrix_scaled <- t(apply(uncorrected_matrix_heatmap, 1, scale))
+      #uncorrected_matrix_scaled <- t(apply(uncorrected_matrix_heatmap, 1, scale))
+      uncorrected_matrix_scaled <- uncorrected_matrix_heatmap
       colnames(uncorrected_matrix_scaled) <- uncorrected_matrix_heatmap_cols
       p <- suppressMessages(ComplexHeatmap::Heatmap(uncorrected_matrix_scaled, top_annotation = colAnn,
                                                     show_row_names = HeatRowNames, show_column_names = HeatColNames,
-                                                    heatmap_legend_param = list(title = "Expression")))
+                                                    heatmap_legend_param = list(title = "Expression"),
+                                                    clustering_method_columns = clusterMethod))
       incProgress(0.5, detail = "Complete!")
     })
     p
@@ -2336,6 +2501,197 @@ server <- function(input, output, session) {
   output$uncorrected_heatmap <- shiny::renderPlot({
     uncorrected_heatmap()
   })
+
+  #### Cluster Info ------------------------------------------------------------
+
+  ClusterInfoTab_react <- reactive({
+
+    dataset_uncorr <- cluster_mv_features_uncorr_matrix()
+    dataset_corr <- cluster_mv_features_corr_matrix()
+    meta <- aligned_meta_file()
+    method <- input$ClusterMethod
+    NumClusters <- input$NumOfCluster
+    corrMethod <- gsub(" ","_",input$batch_correction_method)
+
+    rownames(dataset_uncorr) <- dataset_uncorr[,1]
+    dataset_uncorr <- dataset_uncorr[,-1]
+    hclust_uncorr <- hclust(dist(t(dataset_uncorr)), method = method)
+    hclust_uncorr_cut <- sort(cutree(hclust_uncorr, k=NumClusters))
+    hclust_uncorr_cut_df <- data.frame(names(hclust_uncorr_cut),
+                                       hclust_uncorr_cut)
+    colnames(hclust_uncorr_cut_df) <- c(colnames(meta)[1],
+                                        paste0(method,"_Cluster_Uncorrected"))
+    meta <- merge(meta,hclust_uncorr_cut_df,all = T, sort = F)
+
+    rownames(dataset_corr) <- dataset_corr[,1]
+    dataset_corr <- dataset_corr[,-1]
+    hclust_corr <- hclust(dist(t(dataset_corr)), method = method)
+    hclust_corr_cut <- sort(cutree(hclust_corr, k=NumClusters))
+    hclust_corr_cut_df <- data.frame(names(hclust_corr_cut),
+                                     hclust_corr_cut)
+    colnames(hclust_corr_cut_df) <- c(colnames(meta)[1],
+                                      paste0(method,"_Cluster_",corrMethod,"_Corrected"))
+    meta <- merge(meta,hclust_corr_cut_df,all = T, sort = F)
+    boxplot_meta_file(meta)
+    meta
+
+  })
+
+  output$uncorr_bar_plot <- renderPlot({
+
+    plot_df <- ClusterInfoTab_react()
+    batch <- batch1_choices()
+    method <- input$ClusterMethod
+    cluster_col <- paste0(method,"_Cluster_Uncorrected")
+    FillChoice <- input$barPfill
+    plot_df[,batch] <- as.factor(plot_df[,batch])
+    tickFont <- input$barPAxisTkSize
+    titleFont <- input$barPAxisTtSize
+    barp <- ggplot(plot_df, aes(fill = !!sym(batch), x = !!sym(cluster_col)))
+    if (FillChoice) {
+      barp <- barp + geom_bar(position = "fill") +
+        theme_minimal()
+    } else {
+      barp <- barp + geom_bar() +
+        theme_minimal()
+    }
+    barp <- barp + theme(axis.text.x = element_text(size = tickFont),
+                         axis.title.x = element_text(size = titleFont),
+                         axis.text.y = element_text(size = tickFont),
+                         axis.title.y = element_text(size = titleFont))
+    barp
+
+  })
+
+  output$ClusterInfoTab <- DT::renderDataTable({
+
+    meta <- ClusterInfoTab_react()
+    method <- input$ClusterMethod
+    corrMethod <- gsub(" ","_",input$batch_correction_method)
+    meta <- meta %>%
+      dplyr::relocate(any_of(c(paste0(method,"_Cluster_Uncorrected"),paste0(method,"_Cluster_",corrMethod,"_Corrected"))),
+                      .after = colnames(meta)[1])
+    DT::datatable(meta,
+                  options = list(lengthMenu = c(5,10,20,100,1000),
+                                 pageLength = 10,
+                                 scrollX = T),
+                  rownames = F)
+
+  })
+
+  uncorr_het_react <- reactive({
+
+    meta <- ClusterInfoTab_react()
+    method <- input$ClusterMethod
+    uncorr_col <- paste0(method,"_Cluster_Uncorrected")
+    batch <- batch1_choices()
+
+    uncorr_cluster_batch_freq <- as.data.frame.matrix(table(meta[,uncorr_col], meta[,batch]))
+
+    uncorrected_heterogeneity_shannon = heterogeneity(uncorr_cluster_batch_freq, method = "shannon") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    uncorrected_heterogeneity_berger = heterogeneity(uncorr_cluster_batch_freq, method = "berger") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    uncorrected_heterogeneity_boone = heterogeneity(uncorr_cluster_batch_freq, method = "boone") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    uncorrected_heterogeneity_brillouin = heterogeneity(uncorr_cluster_batch_freq, method = "brillouin") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    uncorrected_heterogeneity_mcintosh = heterogeneity(uncorr_cluster_batch_freq, method = "mcintosh") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+
+    heterogeneity_matrix_uncorr = as.data.frame(cbind(uncorrected_heterogeneity_shannon, uncorrected_heterogeneity_berger,
+                                                      uncorrected_heterogeneity_boone, uncorrected_heterogeneity_brillouin,
+                                                      uncorrected_heterogeneity_mcintosh))
+    heterogeneity_matrix_uncorr$Cluster <- paste0(method,"_Cluster_",1:nrow(heterogeneity_matrix_uncorr))
+    heterogeneity_matrix_uncorr <- heterogeneity_matrix_uncorr %>%
+      dplyr::relocate(Cluster)
+    heterogeneity_matrix_uncorr
+
+  })
+  uncorr_avg_het_react <- reactive({
+
+    heterogeneity_matrix_uncorr <- uncorr_het_react()[,-1]
+    avg_heterogeneity_vec <- apply(heterogeneity_matrix_uncorr,2,function(x) mean(x,na.rm = T))
+    avg_heterogeneity_df <- data.frame(Heterogeneity_Method = names(avg_heterogeneity_vec),
+                                       Average_Heterogeneity = unname(avg_heterogeneity_vec))
+    avg_heterogeneity_df
+
+  })
+  output$uncorr_avg_het <- DT::renderDataTable({
+
+    df <- uncorr_avg_het_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = 2, digits = 4)
+
+  })
+  output$uncorr_het <- DT::renderDataTable({
+
+    df <- uncorr_het_react()
+    DT::datatable(df,
+                  options = list(#lengthMenu = c(5,10,20,100,1000),
+                    #pageLength = 5,
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = c(2:ncol(df)), digits = 4)
+
+  })
+
+  uncorr_evn_react <- reactive({
+
+    meta <- ClusterInfoTab_react()
+    method <- input$ClusterMethod
+    uncorr_col <- paste0(method,"_Cluster_Uncorrected")
+    batch <- batch1_choices()
+
+    uncorr_cluster_batch_freq <- as.data.frame.matrix(table(meta[,uncorr_col], meta[,batch]))
+
+    uncorrected_evenness_shannon = evenness(uncorr_cluster_batch_freq, method="shannon")
+    uncorrected_evenness_brillouin = evenness(uncorr_cluster_batch_freq, method="brillouin")
+    uncorrected_evenness_mcintosh = evenness(uncorr_cluster_batch_freq, method="mcintosh")
+    uncorrected_evenness_simpson = evenness(uncorr_cluster_batch_freq, method="simpson")
+
+    evenness_matrix_uncorr = as.data.frame(cbind(uncorrected_evenness_shannon, uncorrected_evenness_brillouin,
+                                                 uncorrected_evenness_mcintosh, uncorrected_evenness_simpson))
+    evenness_matrix_uncorr$Cluster <- paste0(method,"_Cluster_",1:nrow(evenness_matrix_uncorr))
+    evenness_matrix_uncorr <- evenness_matrix_uncorr %>%
+      dplyr::relocate(Cluster)
+    evenness_matrix_uncorr
+
+  })
+
+  uncorr_avg_evn_react <- reactive({
+
+    evenness_matrix_uncorr <- uncorr_evn_react()[,-1]
+    avg_evenness_vec <- apply(evenness_matrix_uncorr,2,function(x) mean(x,na.rm = T))
+    avg_evenness_df <- data.frame(Evenness_Method = names(avg_evenness_vec),
+                                  Average_Evenness = unname(avg_evenness_vec))
+    avg_evenness_df
+
+  })
+  output$uncorr_avg_evn <- DT::renderDataTable({
+
+    df <- uncorr_avg_evn_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = 2, digits = 4)
+
+  })
+  output$uncorr_evn <- DT::renderDataTable({
+
+    df <- uncorr_evn_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = c(2:ncol(df)), digits = 4)
+
+  })
+
+
 
   #### RLE ---------------------------------------------------------------------
   # Generating uncorrected RLE plot
@@ -2360,7 +2716,7 @@ server <- function(input, output, session) {
     names(mat_RLE) <- NULL
     uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
       assays = list(counts = as.matrix(mat_RLE)),
-      colData = aligned_meta_file()[order(aligned_meta_file()$Study),],
+      colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
       rowData = uncorrected_numeric_matrix()[,1]
     )
     uncorrected_RLE_SCE
@@ -2405,13 +2761,6 @@ server <- function(input, output, session) {
 
   })
 
-  output$rendpvcaPct <- renderUI({
-
-    if (input$ExpVar_Plots == "pvca") {
-      numericInput("pvcaPct","% Threshold", value = 0.8, min = 0, max = 1)
-    }
-
-  })
   uncorrected_EV_df <- shiny::reactive({
     req(input$variable_choices_EV)
     my_colors <- metafolio::gg_color_hue(length(input$variable_choices_EV))
@@ -2459,6 +2808,14 @@ server <- function(input, output, session) {
 
   #### PVCA --------------------------------------------------------------------
 
+  output$rendpvcaPct <- renderUI({
+
+    if (input$ExpVar_Plots == "pvca") {
+      numericInput("pvcaPct","% Threshold", value = 0.8, min = 0, max = 1)
+    }
+
+  })
+
   pvca_mv_features_uncorr_matrix <- reactive({
 
     withProgress(message = "Processing Uncorrected", value = 0, {
@@ -2473,8 +2830,11 @@ server <- function(input, output, session) {
       mad <- NULL
       var <- NULL
       cv <- NULL
+      if (!input$Log_Choice) {
+        mat <- log2(mat + 1)
+      }
       if (var_type == "MAD"){
-        mad <- suppressWarnings(apply(log2(mat + 1), 1, mad))
+        mad <- suppressWarnings(apply(mat, 1, mad))
         mad <- sort(mad, decreasing = T)
         mad <- head(mad, n = topN)
         out <- cbind(names(mad), mad[names(mad)], mat[names(mad),])
@@ -2482,7 +2842,7 @@ server <- function(input, output, session) {
         dataset <- mat[names(mad),]
       }
       else if (var_type == "VAR"){
-        var <- suppressWarnings(apply(log2(mat + 1), 1, var))
+        var <- suppressWarnings(apply(mat, 1, var))
         var <- sort(var, decreasing = T)
         var <- head(var, n = topN)
         out <- cbind(names(var), var[names(var)], mat[names(var),])
@@ -2490,7 +2850,7 @@ server <- function(input, output, session) {
         dataset <- mat[names(var),]
       }
       else if (var_type == "CV"){
-        cv <- suppressWarnings(apply(log2(mat + 1), 1, cv))
+        cv <- suppressWarnings(apply(mat, 1, cv))
         cv <- sort(cv, decreasing = T)
         cv <- head(cv, n = topN)
         out <- cbind(names(cv), cv[names(cv)], mat[names(cv),])
@@ -2570,7 +2930,6 @@ server <- function(input, output, session) {
         uncorrected_mod <- model.matrix(reformulate(uncorrected_SVA_variable_of_interest2()), data = aligned_meta_file())
         uncorrected_mod_null <- model.matrix(~1, data = aligned_meta_file())
         uncorrected_SVA_nsv <- sva::num.sv(uncorrected_numeric_matrix()[,-1], uncorrected_mod, method=svaMethod, vfilter = svaVarNum)
-        print(uncorrected_SVA_nsv)
         incProgress(0.5, detail = "Complete!")
       })
       uncorrected_SVA_nsv
@@ -2599,7 +2958,8 @@ server <- function(input, output, session) {
   })
   observe({
 
-    main_meta <- aligned_meta_file()
+    #main_meta <- aligned_meta_file()
+    main_meta <- boxplot_meta_file()
     uncorr_meta <- uncorr_boxplot_meta_file()
     corr_meta <- corr_boxplot_meta_file()
     main_meta_new <- merge(main_meta,uncorr_meta)
@@ -2640,7 +3000,8 @@ server <- function(input, output, session) {
 
   output$rendBPsampSubset <- renderUI({
 
-    FeatChoices <- c("Select All Samples",colnames(aligned_meta_file())[-1])
+    #FeatChoices <- c("Select All Samples",colnames(aligned_meta_file())[-1])
+    FeatChoices <- c("Select All Samples",colnames(boxplot_meta_file())[-1])
     selectInput("BPsampSubset","Subset Samples By:",choices = FeatChoices, selected = FeatChoices[1])
 
   })
@@ -2650,7 +3011,8 @@ server <- function(input, output, session) {
     req(input$BPsampSubset)
     subSelect <- input$BPsampSubset
     if (subSelect != "Select All Samples") {
-      sampCrit <- unique(aligned_meta_file()[,subSelect])
+      #sampCrit <- unique(aligned_meta_file()[,subSelect])
+      sampCrit <- unique(boxplot_meta_file()[,subSelect])
       selectInput("BPsampCrit","Sample Criteria:",choices = sampCrit)
     }
 
@@ -2658,7 +3020,8 @@ server <- function(input, output, session) {
 
   output$rendBPgroupCriteria <- renderUI({
 
-    GroupChoices <- colnames(aligned_meta_file())[-1]
+    #GroupChoices <- colnames(aligned_meta_file())[-1]
+    GroupChoices <- colnames(boxplot_meta_file())[-1]
     if (isTruthy(input$BPsampSubset)) {
       GroupChoices <- GroupChoices[which(GroupChoices!=input$BPsampSubset)]
     }
@@ -2670,7 +3033,8 @@ server <- function(input, output, session) {
 
     req(input$BPgroupCriteria)
     req(aligned_meta_file())
-    meta <- aligned_meta_file()
+    #meta <- aligned_meta_file()
+    meta <- boxplot_meta_file()
     groupCrit <- input$BPgroupCriteria
     if (input$BPremoveSingles == T) {
       tab <- table(meta[,groupCrit])
@@ -2965,13 +3329,17 @@ server <- function(input, output, session) {
         } else if (BPlog == "Log10+1") {
           meta[,Feature] <- log10(meta[,Feature]+1)
         }
-
-        meta
+        #meta
       }
-      }
-
-
+      meta <- meta %>%
+        group_by(!!sym(groupCrit)) %>%
+        mutate(Outlier = ifelse(is_outlier(!!sym(Feature)),TRUE,FALSE)) %>%
+        as.data.frame()
+      meta
+    }
   })
+
+
 
   CohortBPPlot_react <- reactive({
 
@@ -3067,6 +3435,18 @@ server <- function(input, output, session) {
     barp
 
   })
+
+  output$uncorrected_Box_plot_df <- DT::renderDataTable({
+
+    df <- CohortBPPlot_df_react()
+    DT::datatable(df,
+                  options = list(lengthMenu = c(5,10, 20, 100, 1000),
+                                 pageLength = 10,
+                                 scrollX = T),
+                  rownames = F)
+
+  })
+
 
   ### END OF UNCORRECTED PLOT DATA ---------------------------------------------
 
@@ -3340,6 +3720,14 @@ server <- function(input, output, session) {
 
   })
 
+  observe({
+    if (input$RawCountCheck) {
+      if (input$RawCountNorm == "none") {
+        updateCheckboxInput(session,"Log_Choice", value = F)
+      }
+    }
+  })
+
   Log_Norm_Matrix <- reactive({
 
     set.seed(input$SeedSet)
@@ -3347,10 +3735,9 @@ server <- function(input, output, session) {
     uncorrected_numeric_matrix <- uncorrected_matrix_filtered()
     rownames(uncorrected_numeric_matrix) <- uncorrected_numeric_matrix[,1]
     uncorrected_numeric_matrix <- uncorrected_numeric_matrix[,-1]
+    ## Normalize raw counts
     if (input$RawCountCheck) {
-      if (input$RawCountNorm == "none") {
-        updateCheckboxInput(session,"Log_Choice", value = F)
-      } else {
+      if (input$RawCountNorm != "none") {
         mat <- uncorrected_numeric_matrix
         mat_dgeList <- DGEList(counts = as.matrix(mat))
         withProgress(message = "Processing", value = 0, {
@@ -3362,6 +3749,7 @@ server <- function(input, output, session) {
         })
       }
     }
+    ## Log counts
     if (input$Log_Choice){
       withProgress(message = "Processing", value = 0, {
         incProgress(0.5, detail = "Logging Matrix")
@@ -3369,6 +3757,7 @@ server <- function(input, output, session) {
         incProgress(0.5, detail = "Complete!")
       })
     }
+    ## Quantile Normalize counts
     if (isTruthy(input$QuantNorm)) {
       if (input$QuantNorm){
         withProgress(message = "Processing", value = 0, {
@@ -3438,14 +3827,12 @@ server <- function(input, output, session) {
     }else if(input$batch_correction_method == "ComBatseq"){
       if (isTruthy(batch1_choices())) {
         withProgress(message = "Processing", value = 0, {
-          incProgress(0.25, detail = "Running ComBatseq Batch Correction")
+          incProgress(0.5, detail = "Running ComBatseq Batch Correction")
           combatseq_corrected <- sva::ComBat_seq(
-            as.matrix((2^uncorrected_numeric_matrix)),
+            as.matrix(uncorrected_numeric_matrix),
             batch = c(unlist(aligned_meta_file()[,batch1_choices()])),
             covar_mod = model_matrix()
           )
-          incProgress(0.25, detail = "Running ComBatseq Batch Correction")
-          log2(combatseq_corrected + 1)
           batch_correction <- combatseq_corrected
           incProgress(0.5, detail = "Complete!")
         })
@@ -4075,6 +4462,11 @@ server <- function(input, output, session) {
         colnames(out) <- c("Gene", "CV", colnames(mat))
         dataset <- mat[names(cv),]
       }
+
+      zdataset <- t(apply(dataset, 1, scale))
+      colnames(zdataset) <- names(dataset)
+      dataset <- as.data.frame(zdataset)
+      dataset
       incProgress(0.5, detail = "Complete!")
     })
 
@@ -4147,14 +4539,17 @@ server <- function(input, output, session) {
       colAnn <- heat_colAnn()
       HeatRowNames <- ifelse("Turn on Row Names" %in% input$HeatRowColNames,TRUE,FALSE)
       HeatColNames <- ifelse("Turn on Column Names" %in% input$HeatRowColNames,TRUE,FALSE)
+      clusterMethod <- input$ClusterMethodHeat
 
       corrected_matrix_heatmap <- as.matrix(cluster_mv_features_corr_matrix())
       corrected_matrix_heatmap_cols <- colnames(corrected_matrix_heatmap)
-      corrected_matrix_scaled <- t(apply(corrected_matrix_heatmap, 1, scale))
+      #corrected_matrix_scaled <- t(apply(corrected_matrix_heatmap, 1, scale))
+      corrected_matrix_scaled <- corrected_matrix_heatmap
       colnames(corrected_matrix_scaled) <- corrected_matrix_heatmap_cols
       p <- suppressMessages(ComplexHeatmap::Heatmap(corrected_matrix_scaled, top_annotation = colAnn,
                                                     show_row_names = HeatRowNames, show_column_names = HeatColNames,
-                                                    heatmap_legend_param = list(title = "Expression")))
+                                                    heatmap_legend_param = list(title = "Expression"),
+                                                    clustering_method_columns = clusterMethod))
       incProgress(0.5, detail = "Complete!")
     })
     p
@@ -4163,6 +4558,140 @@ server <- function(input, output, session) {
     corrected_heatmap()
   })
 
+  #### Cluster Information ------------------------------------
+
+  output$corr_bar_plot <- renderPlot({
+
+    plot_df <- ClusterInfoTab_react()
+    batch <- batch1_choices()
+    method <- input$ClusterMethod
+    corrMethod <- gsub(" ","_",input$batch_correction_method)
+    cluster_col <- paste0(method,"_Cluster_",corrMethod,"_Corrected")
+    FillChoice <- input$barPfill
+    plot_df[,batch] <- as.factor(plot_df[,batch])
+    barp <- ggplot(plot_df, aes(fill = !!sym(batch), x = !!sym(cluster_col)))
+    if (FillChoice) {
+      barp <- barp + geom_bar(position = "fill") +
+        theme_minimal()
+    } else {
+      barp <- barp + geom_bar() +
+        theme_minimal()
+    }
+    barp
+
+  })
+  corr_het_react <- reactive({
+
+    meta <- ClusterInfoTab_react()
+    method <- input$ClusterMethod
+    corrMethod <- gsub(" ","_",input$batch_correction_method)
+    corr_col <- paste0(method,"_Cluster_",corrMethod,"_Corrected")
+    batch <- batch1_choices()
+
+    corr_cluster_batch_freq <- as.data.frame.matrix(table(meta[,corr_col], meta[,batch]))
+
+    corrected_heterogeneity_shannon = heterogeneity(corr_cluster_batch_freq, method = "shannon") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    corrected_heterogeneity_berger = heterogeneity(corr_cluster_batch_freq, method = "berger") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    corrected_heterogeneity_boone = heterogeneity(corr_cluster_batch_freq, method = "boone") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    corrected_heterogeneity_brillouin = heterogeneity(corr_cluster_batch_freq, method = "brillouin") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+    corrected_heterogeneity_mcintosh = heterogeneity(corr_cluster_batch_freq, method = "mcintosh") # other options include c("berger", "boone", "brillouin", "mcintosh", "shannon", "simpson")
+
+    heterogeneity_matrix_corr = as.data.frame(cbind(corrected_heterogeneity_shannon, corrected_heterogeneity_berger,
+                                                    corrected_heterogeneity_boone, corrected_heterogeneity_brillouin,
+                                                    corrected_heterogeneity_mcintosh))
+    heterogeneity_matrix_corr$Cluster <- paste0(method,"_Cluster_",1:nrow(heterogeneity_matrix_corr))
+    heterogeneity_matrix_corr <- heterogeneity_matrix_corr %>%
+      dplyr::relocate(Cluster)
+    heterogeneity_matrix_corr
+
+  })
+  corr_avg_het_react <- reactive({
+
+    heterogeneity_matrix_corr <- corr_het_react()[,-1]
+    avg_heterogeneity_vec <- apply(heterogeneity_matrix_corr,2,function(x) mean(x,na.rm = T))
+    avg_heterogeneity_df <- data.frame(Heterogeneity_Method = names(avg_heterogeneity_vec),
+                                       Average_Heterogeneity = unname(avg_heterogeneity_vec))
+    avg_heterogeneity_df
+
+  })
+  output$corr_avg_het <- DT::renderDataTable({
+
+    df <- corr_avg_het_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = 2, digits = 4)
+
+  })
+  output$corr_het <- DT::renderDataTable({
+
+    df <- corr_het_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = c(2:ncol(df)), digits = 4)
+
+  })
+
+  corr_evn_react <- reactive({
+
+    meta <- ClusterInfoTab_react()
+    method <- input$ClusterMethod
+    corrMethod <- gsub(" ","_",input$batch_correction_method)
+    corr_col <- paste0(method,"_Cluster_",corrMethod,"_Corrected")
+    batch <- batch1_choices()
+
+    corr_cluster_batch_freq <- as.data.frame.matrix(table(meta[,corr_col], meta[,batch]))
+
+    corrected_evenness_shannon = evenness(corr_cluster_batch_freq, method="shannon")
+    corrected_evenness_brillouin = evenness(corr_cluster_batch_freq, method="brillouin")
+    corrected_evenness_mcintosh = evenness(corr_cluster_batch_freq, method="mcintosh")
+    corrected_evenness_simpson = evenness(corr_cluster_batch_freq, method="simpson")
+
+    evenness_matrix_corr = as.data.frame(cbind(corrected_evenness_shannon, corrected_evenness_brillouin,
+                                               corrected_evenness_mcintosh, corrected_evenness_simpson))
+    evenness_matrix_corr$Cluster <- paste0(method,"_Cluster_",1:nrow(evenness_matrix_corr))
+    evenness_matrix_corr <- evenness_matrix_corr %>%
+      dplyr::relocate(Cluster)
+    evenness_matrix_corr
+
+  })
+
+  corr_avg_evn_react <- reactive({
+
+    evenness_matrix_corr <- corr_evn_react()[,-1]
+    avg_evenness_vec <- apply(evenness_matrix_corr,2,function(x) mean(x,na.rm = T))
+    avg_evenness_df <- data.frame(Evenness_Method = names(avg_evenness_vec),
+                                  Average_Evenness = unname(avg_evenness_vec))
+    avg_evenness_df
+
+  })
+  output$corr_avg_evn <- DT::renderDataTable({
+
+    df <- corr_avg_evn_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = 2, digits = 4)
+
+  })
+  output$corr_evn <- DT::renderDataTable({
+
+    df <- corr_evn_react()
+    DT::datatable(df,
+                  options = list(
+                    dom = '',
+                    scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = c(2:ncol(df)), digits = 4)
+
+  })
   #### RLE ------------------------------------------------
   corrected_batch_choices_RLE2 <- shiny::reactive({
     if (isTruthy(input$batch_choices_RLE)) {
@@ -4179,7 +4708,7 @@ server <- function(input, output, session) {
     names(mat_RLE) <- NULL
     corrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
       assays = list(counts = as.matrix(mat_RLE)),
-      colData = aligned_meta_file()[order(aligned_meta_file()$Study),],
+      colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
       rowData = corrected_numeric_matrix2()[,1]
     )
     corrected_RLE_SCE
@@ -4369,7 +4898,6 @@ server <- function(input, output, session) {
       df <- as.data.frame(corrected_SVA_object$sv)
       colnames(df) <- paste0("SVA_",input$batch_correction_method,"_Corrected_Surrogate_Vars_",seq(ncol(df)))
       df <- cbind(aligned_meta_file(),df)
-      print(head)
       corr_boxplot_meta_file(df)
       corrected_SVA_object
     }
@@ -4547,8 +5075,13 @@ server <- function(input, output, session) {
           meta[,Feature] <- log10(meta[,Feature]+1)
         }
 
-        meta
+        #meta
       }
+      meta <- meta %>%
+        group_by(!!sym(groupCrit)) %>%
+        mutate(Outlier = ifelse(is_outlier(!!sym(Feature)),TRUE,FALSE)) %>%
+        as.data.frame()
+      meta
     }
 
   })
@@ -4647,6 +5180,16 @@ server <- function(input, output, session) {
 
   })
 
+  output$corrected_Box_plot_df <- DT::renderDataTable({
+
+    df <- CohortBPPlot_corr_df_react()
+    DT::datatable(df,
+                  options = list(lengthMenu = c(5,10, 20, 100, 1000),
+                                 pageLength = 10,
+                                 scrollX = T),
+                  rownames = F)
+
+  })
 
   ### END OF THE OUTPUT GENERATING CODE ----------------------------------------
 
@@ -4758,7 +5301,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$save_uncorrected_UMAP, {
     file_name <- paste("uncorrected_UMAP", Sys.Date(),".svg", sep = "")
     ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_UMAP_react(),
-           height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
+                    height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
     print("uncorrected_UMAP Ready for Zip")
   })
   output$dnldsave_uncorrected_UMAP <- downloadHandler(
@@ -4773,7 +5316,7 @@ server <- function(input, output, session) {
   observeEvent(input$save_uncorrected_elbow_plot, {
     file_name <- paste("uncorrected_elbow_plot", Sys.Date(),".svg", sep = "")
     ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_elbow_analysis(),
-           height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
+                    height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
     print("uncorrected_elbow_plot Ready for Zip")
   })
   output$dnldsave_uncorrected_elbow_plot <- downloadHandler(
@@ -4831,6 +5374,20 @@ server <- function(input, output, session) {
       svg(filename = file, height = input$heatmapHeight, width = input$heatmapWidth)
       ComplexHeatmap::draw(uncorrected_heatmap())
       dev.off()
+    }
+  )
+  shiny::observeEvent(input$save_ClusterInfoTab, {
+    file_name <- paste("Meta_Cluster_Info", Sys.Date(),".tsv", sep = "")
+    readr::write_tsv(boxplot_meta_file(), file.path(temp_directory, file_name))
+    print("Meta_Cluster_Info Ready for Zip")
+  })
+  output$dnldsave_ClusterInfoTab <- downloadHandler(
+    filename = function() {
+      paste0("BatchFlex_","Meta_Cluster_Info","_",Sys.Date(),".tsv")
+    },
+    content = function(file) {
+      df <- boxplot_meta_file()
+      write.table(df,file,sep = '\t', row.names = F)
     }
   )
   shiny::observeEvent(input$save_uncorrected_RLE_plot, {
@@ -4922,7 +5479,20 @@ server <- function(input, output, session) {
       ggplot2::ggsave(file,p, height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
     }
   )
-
+  shiny::observeEvent(input$save_uncorrected_Box_plot_df, {
+    file_name <- paste("uncorrected_BoxPlot_data", Sys.Date(),".tsv", sep = "")
+    readr::write_tsv(CohortBPPlot_df_react(), file.path(temp_directory, file_name))
+    print("uncorrected_BoxPlot_data Ready for Zip")
+  })
+  output$dnldsave_uncorrected_Box_plot_df <- downloadHandler(
+    filename = function() {
+      paste0("BatchFlex_","Uncorrected_BoxPlot_data","_",Sys.Date(),".tsv")
+    },
+    content = function(file) {
+      df <- CohortBPPlot_df_react()
+      write.table(df,file,sep = '\t', row.names = F)
+    }
+  )
   #### Corrected ---------------------------------------------------------------
   shiny::observeEvent(input$save_corrected_matrix, {
     file_name <- paste(input$batch_correction_method, "_corrected_matrix", Sys.Date(),".tsv", sep = "")
@@ -4941,7 +5511,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$save_corrected_PCA_plot, {
     file_name <- paste(input$batch_correction_method, "_corrected_PCA_plot", Sys.Date(),".svg", sep = "")
     ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_PCA_plot_forDlnd_react(),
-           height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
+                    height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
     print("Corrected_PCA_plot Ready for Zip")
   })
   output$dnldsave_corrected_PCA_plot <- downloadHandler(
@@ -5028,7 +5598,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$save_corrected_UMAP, {
     file_name <- paste(input$batch_correction_method,"corrected_UMAP", Sys.Date(),".svg", sep = "")
     ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_UMAP_react(),
-           height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
+                    height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
     print("corrected_UMAP Ready for Zip")
   })
   output$dnldsave_corrected_UMAP <- downloadHandler(
@@ -5175,6 +5745,20 @@ server <- function(input, output, session) {
     content = function(file) {
       p <- CohortBPPlot_corr_react()
       ggplot2::ggsave(file,p, height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
+    }
+  )
+  shiny::observeEvent(input$save_corrected_Box_plot_df, {
+    file_name <- paste("corrected_BoxPlot_data", Sys.Date(),".tsv", sep = "")
+    readr::write_tsv(CohortBPPlot_corr_df_react(), file.path(temp_directory, file_name))
+    print("corrected_BoxPlot_data Ready for Zip")
+  })
+  output$dnldsave_corrected_Box_plot_df <- downloadHandler(
+    filename = function() {
+      paste0("BatchFlex_",input$batch_correction_method,"_","Corrected_BoxPlot_data","_",Sys.Date(),".tsv")
+    },
+    content = function(file) {
+      df <- CohortBPPlot_corr_df_react()
+      write.table(df,file,sep = '\t', row.names = F)
     }
   )
   has.new.files <- function() {
