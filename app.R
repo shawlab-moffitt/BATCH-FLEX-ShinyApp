@@ -471,18 +471,19 @@ ui <-
                                                                                                   )
                                                                                   )
                                                           ),
-                                                          ##### Cluster info ------------------------------------
+                                                          ##### Diversity Eval ------------------------------------
                                                           shiny::conditionalPanel(condition = "input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'clinfo'",
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(6,
                                                                                                   selectInput("ClusterMethod","Cluster Method:",
-                                                                                                              choices = c("ward.D2","ward.D", "complete","single","average","mcquitty","median","centroid"))
+                                                                                                              choices = c("ward.D2","ward.D", "complete","single","average","mcquitty","median","centroid")),
+                                                                                                  shiny::uiOutput("rendBarPFillCol")
                                                                                     ),
                                                                                     shiny::column(6,
-                                                                                                  numericInput("NumOfCluster","Number of Clusters:",value = 3,min = 1,step = 1)
+                                                                                                  numericInput("NumOfCluster","Number of Clusters:",value = 3,min = 1,step = 1),
+                                                                                                  div(shiny::checkboxInput("barPfill","Fill Bars as Percentage",value = F),style = "margin-top:40px")
                                                                                     )
                                                                                   ),
-                                                                                  shiny::checkboxInput("barPfill","Fill Bars as Percentage",value = F)
                                                           ),
                                                           ##### RLE ------------------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'rle'",
@@ -741,7 +742,7 @@ ui <-
                                                                                     )
                                                                                   )
                                                           ),
-                                                          ##### Cluster Information ---------------------------
+                                                          ##### Diversity Eval ---------------------------
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'cluster_main' & input.Cluster_main_pan == 'clinfo'",
                                                                                   p(),
                                                                                   h3("Bar Plot Figure Parameters"),
@@ -1206,13 +1207,14 @@ ui <-
                                                        ),
                                                        value = "heatmap"
                                               ),
-                                              ##### Cluster Info -----------------------------------
-                                              tabPanel("Cluster Information",
+                                              ##### Diversity Eval -----------------------------------
+                                              tabPanel("Diversity Evaluation",
                                                        p(),
                                                        shiny::fluidRow(
                                                          shiny::column(6,
                                                                        h4("Uncorrected Bar Plot"),
-                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")), type = 6),
+                                                                       shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")),
+                                                                       #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")), type = 6),
                                                                        h4("Uncorrected Average Heterogeneity and Evenness"),
                                                                        tabsetPanel(
                                                                          tabPanel("Heterogeneity",
@@ -1234,7 +1236,8 @@ ui <-
                                                          ),
                                                          shiny::column(6,
                                                                        h4("Batch Corrected Bar Plot"),
-                                                                       shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")), type = 6),
+                                                                       shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")),
+                                                                       #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")), type = 6),
                                                                        h4("Batch Corrected Average Heterogeneity and Evenness"),
                                                                        tabsetPanel(
                                                                          tabPanel("Heterogeneity",
@@ -2502,7 +2505,16 @@ server <- function(input, output, session) {
     uncorrected_heatmap()
   })
 
-  #### Cluster Info ------------------------------------------------------------
+  #### Diversity Eval ------------------------------------------------------------
+  
+  output$rendBarPFillCol <- renderUI({
+    
+    shiny::selectInput("BarPFillCol",
+                       "Group Color",
+                       choices = unlist(strsplit(batch_names_from_meta()[-1], ",")),
+                       selected = batch1_choices())
+    
+  })
 
   ClusterInfoTab_react <- reactive({
 
@@ -2539,8 +2551,10 @@ server <- function(input, output, session) {
 
   output$uncorr_bar_plot <- renderPlot({
 
+    req(input$BarPFillCol)
     plot_df <- ClusterInfoTab_react()
-    batch <- batch1_choices()
+    batch <- input$BarPFillCol
+    #batch <- batch1_choices()
     method <- input$ClusterMethod
     cluster_col <- paste0(method,"_Cluster_Uncorrected")
     FillChoice <- input$barPfill
@@ -2567,9 +2581,10 @@ server <- function(input, output, session) {
 
     meta <- ClusterInfoTab_react()
     method <- input$ClusterMethod
+    BarPCol <- input$BarPFillCol
     corrMethod <- gsub(" ","_",input$batch_correction_method)
     meta <- meta %>%
-      dplyr::relocate(any_of(c(paste0(method,"_Cluster_Uncorrected"),paste0(method,"_Cluster_",corrMethod,"_Corrected"))),
+      dplyr::relocate(any_of(c(paste0(method,"_Cluster_Uncorrected"),paste0(method,"_Cluster_",corrMethod,"_Corrected"),BarPCol)),
                       .after = colnames(meta)[1])
     DT::datatable(meta,
                   options = list(lengthMenu = c(5,10,20,100,1000),
@@ -4558,17 +4573,21 @@ server <- function(input, output, session) {
     corrected_heatmap()
   })
 
-  #### Cluster Information ------------------------------------
+  #### Diversity Evaluation ------------------------------------
 
   output$corr_bar_plot <- renderPlot({
-
+    
+    req(input$BarPFillCol)
     plot_df <- ClusterInfoTab_react()
-    batch <- batch1_choices()
+    batch <- input$BarPFillCol
+    #batch <- batch1_choices()
     method <- input$ClusterMethod
     corrMethod <- gsub(" ","_",input$batch_correction_method)
     cluster_col <- paste0(method,"_Cluster_",corrMethod,"_Corrected")
     FillChoice <- input$barPfill
     plot_df[,batch] <- as.factor(plot_df[,batch])
+    tickFont <- input$barPAxisTkSize
+    titleFont <- input$barPAxisTtSize
     barp <- ggplot(plot_df, aes(fill = !!sym(batch), x = !!sym(cluster_col)))
     if (FillChoice) {
       barp <- barp + geom_bar(position = "fill") +
@@ -4577,6 +4596,10 @@ server <- function(input, output, session) {
       barp <- barp + geom_bar() +
         theme_minimal()
     }
+    barp <- barp + theme(axis.text.x = element_text(size = tickFont),
+                         axis.title.x = element_text(size = titleFont),
+                         axis.text.y = element_text(size = tickFont),
+                         axis.title.y = element_text(size = titleFont))
     barp
 
   })
