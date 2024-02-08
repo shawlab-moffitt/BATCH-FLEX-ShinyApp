@@ -41,7 +41,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/R/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib:/usr
 
 
 # Install required R packages
-RUN R -e "install.packages(c('shiny', 'shinyjqui', 'limma', 'DT', 'shinycssloaders', 'metafolio', 'corrplot', 'readr', 'dplyr', 'tidyverse', 'zip', 'glue', 'factoextra', 'FactoMineR', 'magick', 'ggfortify', 'ggplotify', 'draw', 'clValid', 'shinyWidgets', 'tidyr', 'immunedeconv', 'edgeR', 'umap', 'plotly', 'statVisual', 'GSVA'))"
+RUN R -e "install.packages(c('shiny', 'shinyjqui', 'limma', 'DT', 'shinycssloaders', 'metafolio', 'corrplot', 'readr', 'dplyr', 'tidyverse', 'zip', 'glue', 'factoextra', 'FactoMineR', 'magick', 'ggfortify', 'ggplotify', 'draw', 'clValid', 'shinyWidgets', 'tidyr', 'immunedeconv', 'edgeR', 'umap', 'plotly', 'statVisual', 'GSVA', 'svglite', 'tabula', 'folio'))"
 
 
 # Install Bioconductor packages

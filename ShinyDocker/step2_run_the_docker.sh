@@ -5,4 +5,4 @@
 
 
 #command:
-docker run -it -p 3838:3838 batch_flex_shinyapp:latest
+docker run -it -p 3838:3838 batch_flex_shinyapp_02:latest
