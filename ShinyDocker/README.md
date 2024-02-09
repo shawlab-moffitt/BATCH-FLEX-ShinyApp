@@ -27,7 +27,7 @@ C:\>cd C:\Users\Administrator\Desktop\ShinyDocker
 -   Use the `docker build` command to build the Docker image. For example:
 
 ```         
-docker build -t batch_flex_shinyapp .
+C:\Users\Administrator\Desktop\ShinyDocker> docker build -t batch_flex_shinyapp .
 ```
 
 **3. Run the Docker Container**:
@@ -45,7 +45,7 @@ docker build -t batch_flex_shinyapp .
     command:
 
     ```         
-    docker run -it -p 3838:3838 batch_flex_shinyapp:latest
+    C:\Users\Administrator\Desktop\ShinyDocker> docker run -it -p 3838:3838 batch_flex_shinyapp:latest
     ```
 
 Once the container is running, you should be able to access your Shiny app by navigating to:
