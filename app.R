@@ -388,8 +388,15 @@ ui <-
                                                                                                           shiny::uiOutput("rendPCAhover")
                                                                                   ),
                                                                                   shiny::conditionalPanel(condition = "input.PCA_type == 'Cluster Annotation'",
-                                                                                                          shiny::numericInput("cluster_number","Number of Clusters",
-                                                                                                                              value = 2,step = 1,min = 1, width = "50%")
+                                                                                                          shiny::fluidRow(
+                                                                                                            shiny::column(6,
+                                                                                                                          shiny::numericInput("cluster_number","Number of Clusters",
+                                                                                                                                              value = 2,step = 1,min = 1)
+                                                                                                                          ),
+                                                                                                            shiny::column(6, style = "margin-top:15px",
+                                                                                                                          shiny::checkboxInput("FrameClusters","Frame Clusters",value = T)
+                                                                                                                          )
+                                                                                                          )
                                                                                   )
                                                           ),
                                                           ##### PCA MC ------------------------------------
@@ -441,7 +448,7 @@ ui <-
                                                                                   ),
                                                                                   shiny::conditionalPanel(condition = "input.UMAPFeatureCategory == 'Gene Set Pathways'",
                                                                                                           selectInput("UMAPGeneSetCat","Gene Set Database:",choices = unique(geneset_df[,1])),
-                                                                                                          div(DT::dataTableOutput("UMAPGeneSetTableUI"), style = "font-size:10px")
+                                                                                                          div(DT::dataTableOutput("GeneSetTableUIUMAP"), style = "font-size:10px")
                                                                                   )
                                                           ),
                                                           ##### Cluster ------------------------------------
@@ -1216,6 +1223,7 @@ ui <-
                                                                        shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")),
                                                                        #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorr_bar_plot", height = "300px")), type = 6),
                                                                        h4("Uncorrected Average Heterogeneity and Evenness"),
+                                                                       uiOutput("rendErrorMessageUncorr"),
                                                                        tabsetPanel(
                                                                          tabPanel("Heterogeneity",
                                                                                   DT::dataTableOutput("uncorr_avg_het")
@@ -1239,6 +1247,7 @@ ui <-
                                                                        shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")),
                                                                        #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corr_bar_plot", height = "300px")), type = 6),
                                                                        h4("Batch Corrected Average Heterogeneity and Evenness"),
+                                                                       uiOutput("rendErrorMessageCorr"),
                                                                        tabsetPanel(
                                                                          tabPanel("Heterogeneity",
                                                                                   DT::dataTableOutput("corr_avg_het")
@@ -1352,7 +1361,8 @@ ui <-
                                                               shiny::fluidRow(
                                                                 shiny::column(6,
                                                                               shiny::h3("Uncorrected PVCA Plot"),
-                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PVCA_plot")), type = 6),
+                                                                              shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PVCA_plot")),
+                                                                              #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_PVCA_plot")), type = 6),
                                                                               p(),
                                                                               shiny::fluidRow(
                                                                                 column(4, style = 'padding-right:0px;',
@@ -1365,7 +1375,8 @@ ui <-
                                                                 ),
                                                                 shiny::column(6,
                                                                               shiny::h3("Batch Corrected PVCA"),
-                                                                              shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PVCA_plot")), type = 6),
+                                                                              shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PVCA_plot")),
+                                                                              #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_PVCA_plot")), type = 6),
                                                                               p(),
                                                                               shiny::fluidRow(
                                                                                 column(4, style = 'padding-right:0px;',
@@ -1584,9 +1595,14 @@ server <- function(input, output, session) {
         dplyr::group_by(Genes) %>%
         dplyr::summarise_all(max) %>%
         as.data.frame()
-      uncorrected_matrix_unfiltered <- rbind(data_nodup,data_dup_summ)
+      #uncorrected_matrix_unfiltered <- rbind(data_nodup,data_dup_summ)
+      uncorrected_matrix_nodupes <- rbind(data_nodup,data_dup_summ)
     } else {
       uncorrected_matrix_nodupes <- uncorrected_matrix_unfiltered
+    }
+    num_test <- apply(uncorrected_matrix_nodupes[,-1],2, is.numeric)
+    if (all(num_test) == FALSE) {
+      uncorrected_matrix_nodupes[,-1] <- mutate_all(uncorrected_matrix_nodupes[,-1], function(x) as.numeric(as.character(x)))
     }
     uncorrected_matrix_nodupes$filter <- apply(
       uncorrected_matrix_nodupes[,-1],
@@ -1605,6 +1621,7 @@ server <- function(input, output, session) {
     uncorrected_numeric_matrix <- uncorrected_matrix_filtered()
     rownames(uncorrected_numeric_matrix) <- uncorrected_numeric_matrix[,1]
     uncorrected_numeric_matrix <- uncorrected_numeric_matrix[,-1]
+    print(head(as_tibble(uncorrected_numeric_matrix)))
 
     if (input$Log_Choice){
       uncorrected_numeric_matrix <- log2(uncorrected_numeric_matrix + 1)
@@ -1616,7 +1633,9 @@ server <- function(input, output, session) {
   # rendering input table for visualization
   output$uncorrected_matrix_output <- DT::renderDataTable({
     req(uncorrected_numeric_matrix())
-    DT::datatable(uncorrected_numeric_matrix(),
+    expr <- uncorrected_numeric_matrix()
+    expr <- head(expr,c(100,100))
+    DT::datatable(expr,
                   options = list(lengthMenu = c(5,10, 20, 100, 1000),
                                  pageLength = 10,
                                  scrollX = T),
@@ -1629,7 +1648,9 @@ server <- function(input, output, session) {
   })
   output$uncorrected_matrix_output_input <- DT::renderDataTable({
     req(uncorrected_numeric_matrix())
-    DT::datatable(uncorrected_numeric_matrix(),
+    expr <- uncorrected_numeric_matrix()
+    expr <- head(expr,c(100,100))
+    DT::datatable(expr,
                   options = list(lengthMenu = c(5,10, 20, 100, 1000),
                                  pageLength = 10,
                                  scrollX = T),
@@ -1735,7 +1756,9 @@ server <- function(input, output, session) {
   })
   output$meta_file <- DT::renderDataTable({
     req(uncorrected_matrix())
-    DT::datatable(aligned_meta_file(),
+    meta <- aligned_meta_file()
+    meta <- head(meta,c(100,100))
+    DT::datatable(meta,
                   options = list(lengthMenu = c(5,10, 20, 100, 1000),
                                  pageLength = 10,
                                  scrollX = T),
@@ -1791,8 +1814,12 @@ server <- function(input, output, session) {
       mat <- uncorrected_numeric_matrix()
       rownames(mat) <- mat[,1]
       if (input$PCA_type == "Cluster Annotation"){
-        #cluster::pam(as.data.frame(t(uncorrected_numeric_matrix()[,-1])), input$cluster_number)
-        pca <- cluster::pam(as.data.frame(t(mat[,-1])), input$cluster_number)
+        rownames(mat) <- NULL
+        mat <- as.data.frame(mat)
+        mat <- mat[,-1]
+        mat <- mat[, sapply(mat, var) != 0]
+        mat <- as.matrix(mat)
+        pca <- cluster::pam(as.data.frame(t(mat)),input$cluster_number)
       } else if (input$PCA_type == "Meta Annotation"){
         #stats::prcomp(as.data.frame(t(uncorrected_numeric_matrix()[,-1])), scale. = TRUE)
         pca <- stats::prcomp(as.data.frame(t(mat[,-1])), scale. = TRUE)
@@ -1840,7 +1867,7 @@ server <- function(input, output, session) {
     if (input$PCA_type == "Cluster Annotation"){
       autoplot(
         uncorrected_PCA_react(),
-        frame = TRUE,
+        frame = input$FrameClusters,
         frame.type = 'norm')
     } else if (input$PCA_type == "Meta Annotation"){
       autoplot(
@@ -1853,67 +1880,83 @@ server <- function(input, output, session) {
 
   uncorrected_PCA_plot_react <- shiny::reactive({
 
-    meta <- aligned_meta_file()
-    plot_df <- uncorrected_PCA_plot_df()
-    batch_choice <- input$batch_choices_PCA
-    hover_choice <- input$PCAhover
-    metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
-    PC_x <- "PC1"
-    PC_y <- "PC2"
-    colnames(plot_df)[which(colnames(plot_df) == PC_x)] <- "X"
-    colnames(plot_df)[which(colnames(plot_df) == PC_y)] <- "Y"
-    dotSize <- input$PCAdotSize
-    fontSize <- input$pcaFontSize
-
-    if (isTruthy(batch_choice)) {
-      if (batch_choice != "Select") {
-        colnames(plot_df)[which(colnames(plot_df) == batch_choice)] <- "ColorBatch"
-        p4 <- plot_ly() %>%
-          add_trace(
-            data = plot_df,
-            x = ~X,
-            y = ~Y,
-            type = "scatter",
-            mode = "markers",
-            color = ~ColorBatch,
-            legendgroup=batch_choice,
-            marker=list(size=dotSize,symbol = 'circle'),
-            hovertemplate = ~text
-          ) %>%
-          layout(xaxis = list(zeroline = FALSE,title = PC_x),
-                 yaxis = list(zeroline = FALSE,title = PC_y),
-                 font = list(size = fontSize)) %>%
-          config(
-            toImageButtonOptions = list(
-              format = "svg"
+    if (input$PCA_type == "Cluster Annotation"){
+      p <- ggplot2::autoplot(
+        uncorrected_PCA_react(),
+        frame = input$FrameClusters,
+        frame.type = 'norm')
+      ply <- ggplotly(p)
+      for (i in 1:length(ply$x$data)){
+        if (!is.null(ply$x$data[[i]]$name)){
+          ply$x$data[[i]]$name =  gsub("\\(","",str_split(ply$x$data[[i]]$name,",")[[1]][1])
+          if (ply$x$data[[i]]$hoveron == "fills") {
+            ply$x$data[[i]]$showlegend = FALSE
+          }
+        }
+      }
+      ply
+    } else if (input$PCA_type == "Meta Annotation"){
+      meta <- aligned_meta_file()
+      plot_df <- uncorrected_PCA_plot_df()
+      batch_choice <- input$batch_choices_PCA
+      hover_choice <- input$PCAhover
+      metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
+      PC_x <- "PC1"
+      PC_y <- "PC2"
+      colnames(plot_df)[which(colnames(plot_df) == PC_x)] <- "X"
+      colnames(plot_df)[which(colnames(plot_df) == PC_y)] <- "Y"
+      dotSize <- input$PCAdotSize
+      fontSize <- input$pcaFontSize
+      
+      if (isTruthy(batch_choice)) {
+        if (batch_choice != "Select") {
+          colnames(plot_df)[which(colnames(plot_df) == batch_choice)] <- "ColorBatch"
+          p4 <- plot_ly() %>%
+            add_trace(
+              data = plot_df,
+              x = ~X,
+              y = ~Y,
+              type = "scatter",
+              mode = "markers",
+              color = ~ColorBatch,
+              legendgroup=batch_choice,
+              marker=list(size=dotSize,symbol = 'circle'),
+              hovertemplate = ~text
+            ) %>%
+            layout(xaxis = list(zeroline = FALSE,title = PC_x),
+                   yaxis = list(zeroline = FALSE,title = PC_y),
+                   font = list(size = fontSize)) %>%
+            config(
+              toImageButtonOptions = list(
+                format = "svg"
+              )
             )
-          )
-        p4
-      } else {
-        p4 <- plot_ly() %>%
-          add_trace(
-            data = plot_df,
-            x = ~X,
-            y = ~Y,
-            type = "scatter",
-            mode = "markers",
-            marker = list(color = "black"),
-            marker=list(size=dotSize,symbol = 'circle'),
-            hovertemplate = ~text
-          ) %>%
-          layout(xaxis = list(zeroline = FALSE,title = PC_x),
-                 yaxis = list(zeroline = FALSE,title = PC_y),
-                 font = list(size = fontSize)) %>%
-          config(
-            toImageButtonOptions = list(
-              format = "svg"
+          p4
+        } else {
+          p4 <- plot_ly() %>%
+            add_trace(
+              data = plot_df,
+              x = ~X,
+              y = ~Y,
+              type = "scatter",
+              mode = "markers",
+              marker = list(color = "black"),
+              marker=list(size=dotSize,symbol = 'circle'),
+              hovertemplate = ~text
+            ) %>%
+            layout(xaxis = list(zeroline = FALSE,title = PC_x),
+                   yaxis = list(zeroline = FALSE,title = PC_y),
+                   font = list(size = fontSize)) %>%
+            config(
+              toImageButtonOptions = list(
+                format = "svg"
+              )
             )
-          )
-        p4
+          p4
+        }
       }
     }
-
-
+    
   })
 
   output$uncorrected_PCA <- renderPlotly({
@@ -2145,6 +2188,9 @@ server <- function(input, output, session) {
     } else if (FeatCat == "Immune Deconvolution Features") {
       Features <- UMAP_ImmDeconv_uncorr_react()[,1]
       Features
+    } else {
+      Features <- NULL
+      Features
     }
 
   })
@@ -2156,10 +2202,19 @@ server <- function(input, output, session) {
                          server = T)
 
   })
+  
+  UMAPGeneSetTableBack_react <- reactive({
+    
+    GeneSetTable_sub <- geneset_df[which(geneset_df[,1] == input$UMAPGeneSetCat),]
+    GeneSetTable_sub <- GeneSetTable_sub[,-c(1,2)]
+    colnames(GeneSetTable_sub) <- c("Gene Set Category","Gene Set")
+    GeneSetTable_sub
+    
+  })
 
-  output$UMAPGeneSetTableUI <- DT::renderDataTable({
+  output$GeneSetTableUIUMAP <- DT::renderDataTable({
 
-    GeneSetTable_sub <- GeneSetTableBack_react()
+    GeneSetTable_sub <- UMAPGeneSetTableBack_react()
     DT::datatable(GeneSetTable_sub,
                   options = list(lengthMenu = c(5,10, 20, 100, 1000),
                                  pageLength = 10,
@@ -2168,6 +2223,7 @@ server <- function(input, output, session) {
                   rownames = F)
 
   })
+  
 
   UMAP_uncorr_anno_df <- shiny::reactive({
 
@@ -2203,22 +2259,24 @@ server <- function(input, output, session) {
       meta <- merge(meta,featdf)
       meta
     } else if (FeatCat == "Gene Set Pathways") {
-      gs_name <- GeneSetTableBack_react()[input$UMAPGeneSetTableUI_rows_selected,ncol(GeneSetTableBack_react())]
-      gs <- geneset[gs_name]
-      mat <- uncorrected_numeric_matrix()
-      rownames(mat) <- mat[,1]
-      mat <- mat[,-1]
-      mat <- as.matrix(mat)
-      withProgress(message = "Processing Uncorrected", value = 0, {
-        incProgress(0.5, detail = "Running ssGSEA")
-        ssGSEA_param <- GSVA::ssgseaParam(mat,gs)
-        ssGSEA <- GSVA::gsva(ssGSEA_param)
-        incProgress(0.5, detail = "Complete!")
-      })
-      ssGSEA <- as.data.frame(t(ssGSEA))
-      ssGSEA[,NameCol] <- rownames(ssGSEA)
-      meta <- merge(meta,ssGSEA)
-      meta
+      gs_name <- as.character(UMAPGeneSetTableBack_react()[input$GeneSetTableUIUMAP_rows_selected,ncol(UMAPGeneSetTableBack_react())])
+      if (isTruthy(gs_name)) {
+        gs <- geneset[gs_name]
+        Feature <- gs_name
+        mat <- Mat_for_ssGSEA_uncorr()
+        rownames(mat) <- mat[,1]
+        mat <- mat[,-1]
+        mat <- as.matrix(mat)
+        withProgress(message = "Processing Uncorrected", value = 0, {
+          incProgress(0.5, detail = "Running ssGSEA")
+          ssGSEA_param <- GSVA::ssgseaParam(mat,gs)
+          ssGSEA <- GSVA::gsva(ssGSEA_param)
+          incProgress(0.5, detail = "Complete!")
+        })
+        ssGSEA <- as.data.frame(t(ssGSEA))
+        ssGSEA[,NameCol] <- rownames(ssGSEA)
+        meta <- merge(meta,ssGSEA)
+      }
     } else {
       meta <- meta
       meta
@@ -2266,11 +2324,17 @@ server <- function(input, output, session) {
 
   uncorrected_UMAP_react <- reactive({
 
-    req(input$UMAPFeatSelection)
+    #req(input$UMAPFeatSelection)
+    FeatCat <- input$UMAPFeatureCategory
     plot_df <- uncorrected_umap_coord()
     rownames(plot_df) <- plot_df[,1]
     UMAPdotSize <- 2
-    umap_annoCol <- input$UMAPFeatSelection
+    if (FeatCat == "Gene Set Pathways") {
+      umap_annoCol <- as.character(UMAPGeneSetTableBack_react()[input$GeneSetTableUIUMAP_rows_selected,ncol(UMAPGeneSetTableBack_react())])
+    } else {
+      umap_annoCol <- input$UMAPFeatSelection
+    }
+    req(umap_annoCol)
     meta <- UMAP_uncorr_anno_df()
     NameCol <- colnames(meta)[1]
     umapdotSize <- input$umapdotSize
@@ -2507,6 +2571,20 @@ server <- function(input, output, session) {
 
   #### Diversity Eval ------------------------------------------------------------
   
+  output$rendErrorMessageUncorr <- renderUI({
+    if (input$batch_correction_method == "Select") {
+      span(textOutput("ErrorMessageUncorr"), style="color:red")
+    }
+  })
+  output$rendErrorMessageCorr <- renderUI({
+    if (input$batch_correction_method == "Select") {
+      span(textOutput("ErrorMessageCorr"), style="color:red")
+    }
+  })
+  output$ErrorMessageUncorr <- renderText({"Select batch correction method and batch to continue"})
+  output$ErrorMessageCorr <- renderText({"Select batch correction method and batch to continue"})
+  
+  
   output$rendBarPFillCol <- renderUI({
     
     shiny::selectInput("BarPFillCol",
@@ -2596,6 +2674,7 @@ server <- function(input, output, session) {
 
   uncorr_het_react <- reactive({
 
+    req(input$batch_correction_method != "Select")
     meta <- ClusterInfoTab_react()
     method <- input$ClusterMethod
     uncorr_col <- paste0(method,"_Cluster_Uncorrected")
@@ -2619,7 +2698,8 @@ server <- function(input, output, session) {
 
   })
   uncorr_avg_het_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     heterogeneity_matrix_uncorr <- uncorr_het_react()[,-1]
     avg_heterogeneity_vec <- apply(heterogeneity_matrix_uncorr,2,function(x) mean(x,na.rm = T))
     avg_heterogeneity_df <- data.frame(Heterogeneity_Method = names(avg_heterogeneity_vec),
@@ -2652,7 +2732,8 @@ server <- function(input, output, session) {
   })
 
   uncorr_evn_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     meta <- ClusterInfoTab_react()
     method <- input$ClusterMethod
     uncorr_col <- paste0(method,"_Cluster_Uncorrected")
@@ -2675,7 +2756,8 @@ server <- function(input, output, session) {
   })
 
   uncorr_avg_evn_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     evenness_matrix_uncorr <- uncorr_evn_react()[,-1]
     avg_evenness_vec <- apply(evenness_matrix_uncorr,2,function(x) mean(x,na.rm = T))
     avg_evenness_df <- data.frame(Evenness_Method = names(avg_evenness_vec),
@@ -2712,28 +2794,52 @@ server <- function(input, output, session) {
   # Generating uncorrected RLE plot
   output$batch_choices_RLE <- shiny::renderUI({
     shiny::selectInput("batch_choices_RLE",
-                       "Group Color by Batch",
-                       c("Select", unlist(strsplit(batch_names_from_meta(), ","))),
+                       "Color by:",
+                       #c("Select", unlist(strsplit(batch_names_from_meta(), ","))),
+                       unlist(strsplit(batch_names_from_meta()[-1], ",")),
                        selected = batch1_choices())
   })
   uncorrected_batch_choices_RLE2 <- shiny::reactive({
     if (isTruthy(input$batch_choices_RLE)) {
       if (input$batch_choices_RLE == "Select"){
-        NULL
+        uncorrected_batch_choices_RLE2 <- NULL
       }else {
         uncorrected_batch_choices_RLE2 <- input$batch_choices_RLE
       }
+      uncorrected_batch_choices_RLE2
     }
   })
   RLE_Obj_Uncorr <- reactive({
-
+    
     mat_RLE <- uncorrected_numeric_matrix()[,-1]
-    names(mat_RLE) <- NULL
-    uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
-      assays = list(counts = as.matrix(mat_RLE)),
-      colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
-      rowData = uncorrected_numeric_matrix()[,1]
-    )
+    rownames(mat_RLE) <- uncorrected_numeric_matrix()[,1]
+    meta <- aligned_meta_file()
+    batch.1 <- uncorrected_batch_choices_RLE2()
+    rle_mat <- mat_RLE
+    rle_mat_meta <- cbind(t(rle_mat), meta)
+    rle_mat_meta_ordered <- rle_mat_meta[order(rle_mat_meta[[batch.1]]),]
+    rle_mat_ordered <- t(rle_mat_meta_ordered[,!colnames(rle_mat_meta_ordered) %in% colnames(meta)])
+    rle_meta <- rle_mat_meta_ordered[,colnames(rle_mat_meta_ordered) %in% colnames(meta)]
+    
+    #mat_RLE <- uncorrected_numeric_matrix()[,-1]
+    #names(mat_RLE) <- NULL
+    #if (input$batch_choices_RLE == "Select"){
+    #  uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+    #  assays = list(counts = as.matrix(mat_RLE)),
+    #  rowData = uncorrected_numeric_matrix()[,1]
+    #  )
+    #} else {
+      uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+        assays = list(counts = as.matrix(rle_mat_ordered)),
+        colData = rle_meta,
+        rowData = rownames(mat_RLE)
+      )
+      #uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+      #assays = list(counts = as.matrix(mat_RLE)),
+      #colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
+      #rowData = uncorrected_numeric_matrix()[,1]
+      #)
+    #}
     uncorrected_RLE_SCE
 
   })
@@ -2756,7 +2862,8 @@ server <- function(input, output, session) {
   output$uncorrected_RLE_plot <- shiny::renderPlot({
     uncorrected_RLE()
   })
-
+  
+  
   #### Exp Var -----------------------------------------------------------------
   # Generating EV plot
   output$variable_choices_EV <- shiny::renderUI({
@@ -2887,7 +2994,7 @@ server <- function(input, output, session) {
 
     if (isTruthy(input$variable_choices_EV) & isTruthy(input$pvcaPct)) {
       vars <- input$variable_choices_EV
-      if (length(vars) > 2) {
+      if (length(vars) >= 2) {
         withProgress(message = "Processing Uncorrected", value = 0, {
           incProgress(0.5, detail = "Running PCVA")
           pvca_res <- statVisual::PVCA(
@@ -2953,7 +3060,7 @@ server <- function(input, output, session) {
   uncorrected_SVA_object <- reactive({
     if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
       req(uncorrected_SVA_nsv())
-      svaMethod <- input$svaMethod
+      svaMethod <- input$svaMethod5
       svaVarNum <- input$SVAvarNum
       withProgress(message = "Processing Uncorrected", value = 0, {
         incProgress(0.5, detail = "Running SVA")
@@ -2965,10 +3072,12 @@ server <- function(input, output, session) {
         incProgress(0.5, detail = "Complete!")
       })
       df <- as.data.frame(uncorrected_SVA_object$sv)
-      colnames(df) <- paste0("SVA_Uncorrected_Surrogate_Vars_",seq(ncol(df)))
-      df <- cbind(aligned_meta_file(),df)
-      uncorr_boxplot_meta_file(df)
-      uncorrected_SVA_object
+      if (ncol(df) > 0) {
+        colnames(df) <- paste0("SVA_Uncorrected_Surrogate_Vars_",seq(ncol(df)))
+        df <- cbind(aligned_meta_file(),df)
+        uncorr_boxplot_meta_file(df)
+        uncorrected_SVA_object
+      }
     }
   })
   observe({
@@ -2977,8 +3086,8 @@ server <- function(input, output, session) {
     main_meta <- boxplot_meta_file()
     uncorr_meta <- uncorr_boxplot_meta_file()
     corr_meta <- corr_boxplot_meta_file()
-    main_meta_new <- merge(main_meta,uncorr_meta)
-    main_meta_new <- merge(main_meta_new,corr_meta)
+    main_meta_new <- merge(main_meta,uncorr_meta, all.x = T)
+    main_meta_new <- merge(main_meta_new,corr_meta, all.x = T)
     boxplot_meta_file(main_meta_new)
 
   })
@@ -3047,7 +3156,7 @@ server <- function(input, output, session) {
   output$rendBPgroupSelection <- renderUI({
 
     req(input$BPgroupCriteria)
-    req(aligned_meta_file())
+    req(boxplot_meta_file())
     #meta <- aligned_meta_file()
     meta <- boxplot_meta_file()
     groupCrit <- input$BPgroupCriteria
@@ -3993,7 +4102,13 @@ server <- function(input, output, session) {
     withProgress(message = "Processing Batch Corrected", value = 0, {
       incProgress(0.5, detail = "PCA Object")
       if (input$PCA_type == "Cluster Annotation"){
-        pca <- cluster::pam(as.data.frame(t(batch_correction())),input$cluster_number)
+        mat <- batch_correction()
+        row.names(mat) <- NULL
+        mat <- as.data.frame(mat)
+        mat <- mat[, sapply(mat, var) != 0]
+        mat <- as.matrix(mat)
+        pca <- cluster::pam(as.data.frame(t(mat)),input$cluster_number)
+        #pca <- cluster::pam(as.data.frame(t(batch_correction())),input$cluster_number)
       } else if (input$PCA_type == "Meta Annotation"){
         pca <- stats::prcomp(as.data.frame(t(batch_correction())), scale. = TRUE)
       }
@@ -4040,7 +4155,7 @@ server <- function(input, output, session) {
     if (input$PCA_type == "Cluster Annotation"){
       ggplot2::autoplot(
         corrected_PCA_react(),
-        frame = TRUE,
+        frame = input$FrameClusters,
         frame.type = 'norm')
     } else if (input$PCA_type == "Meta Annotation"){
       ggplot2::autoplot(
@@ -4052,67 +4167,85 @@ server <- function(input, output, session) {
   })
 
   corrected_PCA_plot_react <- shiny::reactive({
-
-    meta <- aligned_meta_file()
-    plot_df <- corrected_PCA_plot_df()
-    batch_choice <- input$batch_choices_PCA
-    hover_choice <- input$PCAhover
-    metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
-    PC_x <- "PC1"
-    PC_y <- "PC2"
-    colnames(plot_df)[which(colnames(plot_df) == PC_x)] <- "X"
-    colnames(plot_df)[which(colnames(plot_df) == PC_y)] <- "Y"
-    dotSize <- input$PCAdotSize
-    dotSize <- input$PCAdotSize
-    fontSize <- input$pcaFontSize
-
-    if (isTruthy(batch_choice)) {
-      if (batch_choice != "Select") {
-        colnames(plot_df)[which(colnames(plot_df) == batch_choice)] <- "ColorBatch"
-        p4 <- plot_ly() %>%
-          add_trace(
-            data = plot_df,
-            x = ~X,
-            y = ~Y,
-            type = "scatter",
-            mode = "markers",
-            color = ~ColorBatch,
-            legendgroup=batch_choice,
-            marker=list(size=dotSize,symbol = 'circle'),
-            hovertemplate = ~text
-          ) %>%
-          layout(xaxis = list(zeroline = FALSE,title = PC_x),
-                 yaxis = list(zeroline = FALSE,title = PC_y),
-                 font = list(size = fontSize)) %>%
-          config(
-            toImageButtonOptions = list(
-              format = "svg"
+    
+    if (input$PCA_type == "Cluster Annotation"){
+      p <- ggplot2::autoplot(
+        corrected_PCA_react(),
+        frame = input$FrameClusters,
+        frame.type = 'norm')
+      ply <- ggplotly(p)
+      for (i in 1:length(ply$x$data)){
+        if (!is.null(ply$x$data[[i]]$name)){
+          ply$x$data[[i]]$name =  gsub("\\(","",str_split(ply$x$data[[i]]$name,",")[[1]][1])
+          if (ply$x$data[[i]]$hoveron == "fills") {
+            ply$x$data[[i]]$showlegend = FALSE
+          }
+        }
+      }
+      ply
+    } else if (input$PCA_type == "Meta Annotation"){
+      meta <- aligned_meta_file()
+      plot_df <- corrected_PCA_plot_df()
+      batch_choice <- input$batch_choices_PCA
+      hover_choice <- input$PCAhover
+      metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
+      PC_x <- "PC1"
+      PC_y <- "PC2"
+      colnames(plot_df)[which(colnames(plot_df) == PC_x)] <- "X"
+      colnames(plot_df)[which(colnames(plot_df) == PC_y)] <- "Y"
+      dotSize <- input$PCAdotSize
+      dotSize <- input$PCAdotSize
+      fontSize <- input$pcaFontSize
+      
+      if (isTruthy(batch_choice)) {
+        if (batch_choice != "Select") {
+          colnames(plot_df)[which(colnames(plot_df) == batch_choice)] <- "ColorBatch"
+          p4 <- plot_ly() %>%
+            add_trace(
+              data = plot_df,
+              x = ~X,
+              y = ~Y,
+              type = "scatter",
+              mode = "markers",
+              color = ~ColorBatch,
+              legendgroup=batch_choice,
+              marker=list(size=dotSize,symbol = 'circle'),
+              hovertemplate = ~text
+            ) %>%
+            layout(xaxis = list(zeroline = FALSE,title = PC_x),
+                   yaxis = list(zeroline = FALSE,title = PC_y),
+                   font = list(size = fontSize)) %>%
+            config(
+              toImageButtonOptions = list(
+                format = "svg"
+              )
             )
-          )
-        p4
-      } else {
-        p4 <- plot_ly() %>%
-          add_trace(
-            data = plot_df,
-            x = ~X,
-            y = ~Y,
-            type = "scatter",
-            mode = "markers",
-            marker = list(color = "black"),
-            marker=list(size=dotSize,symbol = 'circle'),
-            hovertemplate = ~text
-          ) %>%
-          layout(xaxis = list(zeroline = FALSE,title = PC_x),
-                 yaxis = list(zeroline = FALSE,title = PC_y),
-                 font = list(size = fontSize)) %>%
-          config(
-            toImageButtonOptions = list(
-              format = "svg"
+          p4
+        } else {
+          p4 <- plot_ly() %>%
+            add_trace(
+              data = plot_df,
+              x = ~X,
+              y = ~Y,
+              type = "scatter",
+              mode = "markers",
+              marker = list(color = "black"),
+              marker=list(size=dotSize,symbol = 'circle'),
+              hovertemplate = ~text
+            ) %>%
+            layout(xaxis = list(zeroline = FALSE,title = PC_x),
+                   yaxis = list(zeroline = FALSE,title = PC_y),
+                   font = list(size = fontSize)) %>%
+            config(
+              toImageButtonOptions = list(
+                format = "svg"
+              )
             )
-          )
-        p4
+          p4
+        }
       }
     }
+    
 
   })
   output$corrected_PCA <- renderPlotly({
@@ -4328,23 +4461,25 @@ server <- function(input, output, session) {
       featdf[,NameCol] <- rownames(featdf)
       meta <- merge(meta,featdf)
       meta
-    } else if (FeatCat == "Gene Set Pathways") {
-      gs_name <- GeneSetTableBack_react()[input$UMAPGeneSetTableUI_rows_selected,ncol(GeneSetTableBack_react())]
-      gs <- geneset[gs_name]
-      mat <- corrected_numeric_matrix2()
-      rownames(mat) <- mat[,1]
-      mat <- mat[,-1]
-      mat <- as.matrix(mat)
-      withProgress(message = "Processing Batch Corrected", value = 0, {
-        incProgress(0.5, detail = "Running ssGSEA")
-        ssGSEA_param <- GSVA::ssgseaParam(mat,gs)
-        ssGSEA <- GSVA::gsva(ssGSEA_param)
-        incProgress(0.5, detail = "Complete!")
-      })
-      ssGSEA <- as.data.frame(t(ssGSEA))
-      ssGSEA[,NameCol] <- rownames(ssGSEA)
-      meta <- merge(meta,ssGSEA)
-      meta
+    }else if (FeatCat == "Gene Set Pathways") {
+      gs_name <- as.character(UMAPGeneSetTableBack_react()[input$GeneSetTableUIUMAP_rows_selected,ncol(UMAPGeneSetTableBack_react())])
+      if (isTruthy(gs_name)) {
+        gs <- geneset[gs_name]
+        Feature <- gs_name
+        mat <- Mat_for_ssGSEA_corr()
+        rownames(mat) <- mat[,1]
+        mat <- mat[,-1]
+        mat <- as.matrix(mat)
+        withProgress(message = "Processing Uncorrected", value = 0, {
+          incProgress(0.5, detail = "Running ssGSEA")
+          ssGSEA_param <- GSVA::ssgseaParam(mat,gs)
+          ssGSEA <- GSVA::gsva(ssGSEA_param)
+          incProgress(0.5, detail = "Complete!")
+        })
+        ssGSEA <- as.data.frame(t(ssGSEA))
+        ssGSEA[,NameCol] <- rownames(ssGSEA)
+        meta <- merge(meta,ssGSEA)
+      }
     } else {
       meta <- meta
       meta
@@ -4391,11 +4526,17 @@ server <- function(input, output, session) {
 
   corrected_UMAP_react <- reactive({
 
-    req(input$UMAPFeatSelection)
+    #req(input$UMAPFeatSelection)
+    FeatCat <- input$UMAPFeatureCategory
     plot_df <- corrected_umap_coord()
     rownames(plot_df) <- plot_df[,1]
     UMAPdotSize <- 2
-    umap_annoCol <- input$UMAPFeatSelection
+    if (FeatCat == "Gene Set Pathways") {
+      umap_annoCol <- as.character(UMAPGeneSetTableBack_react()[input$GeneSetTableUIUMAP_rows_selected,ncol(UMAPGeneSetTableBack_react())])
+    } else {
+      umap_annoCol <- input$UMAPFeatSelection
+    }
+    req(umap_annoCol)
     meta <- UMAP_corr_anno_df()
     NameCol <- colnames(meta)[1]
     umapdotSize <- input$umapdotSize
@@ -4604,7 +4745,8 @@ server <- function(input, output, session) {
 
   })
   corr_het_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     meta <- ClusterInfoTab_react()
     method <- input$ClusterMethod
     corrMethod <- gsub(" ","_",input$batch_correction_method)
@@ -4629,7 +4771,8 @@ server <- function(input, output, session) {
 
   })
   corr_avg_het_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     heterogeneity_matrix_corr <- corr_het_react()[,-1]
     avg_heterogeneity_vec <- apply(heterogeneity_matrix_corr,2,function(x) mean(x,na.rm = T))
     avg_heterogeneity_df <- data.frame(Heterogeneity_Method = names(avg_heterogeneity_vec),
@@ -4661,7 +4804,8 @@ server <- function(input, output, session) {
   })
 
   corr_evn_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     meta <- ClusterInfoTab_react()
     method <- input$ClusterMethod
     corrMethod <- gsub(" ","_",input$batch_correction_method)
@@ -4685,7 +4829,8 @@ server <- function(input, output, session) {
   })
 
   corr_avg_evn_react <- reactive({
-
+    
+    req(input$batch_correction_method != "Select")
     evenness_matrix_corr <- corr_evn_react()[,-1]
     avg_evenness_vec <- apply(evenness_matrix_corr,2,function(x) mean(x,na.rm = T))
     avg_evenness_df <- data.frame(Evenness_Method = names(avg_evenness_vec),
@@ -4726,14 +4871,41 @@ server <- function(input, output, session) {
     }
   })
   RLE_Obj_Corr <- reactive({
-
+    
     mat_RLE <- batch_correction()
-    names(mat_RLE) <- NULL
-    corrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
-      assays = list(counts = as.matrix(mat_RLE)),
-      colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
-      rowData = corrected_numeric_matrix2()[,1]
+    meta <- aligned_meta_file()
+    batch.1 <- uncorrected_batch_choices_RLE2()
+    rle_mat <- mat_RLE
+    rle_mat_meta <- cbind(t(rle_mat), meta)
+    rle_mat_meta_ordered <- rle_mat_meta[order(rle_mat_meta[[batch.1]]),]
+    rle_mat_ordered <- t(rle_mat_meta_ordered[,!colnames(rle_mat_meta_ordered) %in% colnames(meta)])
+    rle_meta <- rle_mat_meta_ordered[,colnames(rle_mat_meta_ordered) %in% colnames(meta)]
+    
+    uncorrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+      assays = list(counts = as.matrix(rle_mat_ordered)),
+      colData = rle_meta,
+      rowData = rownames(mat_RLE)
     )
+
+    #mat_RLE <- batch_correction()
+    #names(mat_RLE) <- NULL
+    #if (input$batch_choices_RLE == "Select"){
+    #  corrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+    #    assays = list(counts = as.matrix(mat_RLE)),
+    #    rowData = corrected_numeric_matrix2()[,1]
+    #  )
+    #} else {
+      corrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+        assays = list(counts = as.matrix(rle_mat_ordered)),
+        colData = rle_meta,
+        rowData = rownames(mat_RLE)
+      )
+      #corrected_RLE_SCE <- SingleCellExperiment::SingleCellExperiment(
+      #  assays = list(counts = as.matrix(mat_RLE)),
+      #  colData = aligned_meta_file()[order(aligned_meta_file()[,uncorrected_batch_choices_RLE2()]),],
+      #  rowData = corrected_numeric_matrix2()[,1]
+      #)
+    #}
     corrected_RLE_SCE
 
   })
@@ -4855,7 +5027,7 @@ server <- function(input, output, session) {
     mat <- as.matrix(pvca_mv_features_corr_matrix())
     if (isTruthy(input$variable_choices_EV) & isTruthy(input$pvcaPct)) {
       vars <- input$variable_choices_EV
-      if (length(vars) > 2) {
+      if (length(vars) >= 2) {
         withProgress(message = "Processing Batch Corrected", value = 0, {
           incProgress(0.5, detail = "Running PCVA")
           pvca_res <- statVisual::PVCA(
@@ -4919,14 +5091,17 @@ server <- function(input, output, session) {
         incProgress(0.5, detail = "Complete!")
       })
       df <- as.data.frame(corrected_SVA_object$sv)
-      colnames(df) <- paste0("SVA_",input$batch_correction_method,"_Corrected_Surrogate_Vars_",seq(ncol(df)))
-      df <- cbind(aligned_meta_file(),df)
-      corr_boxplot_meta_file(df)
-      corrected_SVA_object
+      if (ncol(df) > 0) {
+        colnames(df) <- paste0("SVA_",input$batch_correction_method,"_Corrected_Surrogate_Vars_",seq(ncol(df)))
+        df <- cbind(aligned_meta_file(),df)
+        corr_boxplot_meta_file(df)
+        corrected_SVA_object
+      }
+      
     }
   })
   corrected_SVA_probability_df <- reactive({
-    if (isTruthy(uncorrected_SVA_object())) {
+    if (isTruthy(corrected_SVA_object())) {
       corrected_SVA_probability_df <- data.frame(
         Genes = 1:length(corrected_SVA_object()$pprob.gam),
         latent_variable = corrected_SVA_object()$pprob.gam,
@@ -4939,7 +5114,7 @@ server <- function(input, output, session) {
   })
 
   corrected_SVA_probability_ggplot <- reactive({
-    if (isTruthy(uncorrected_SVA_probability_df())) {
+    if (isTruthy(corrected_SVA_probability_df())) {
       ggplot(corrected_SVA_probability_df(), aes(x = probability_association_of_each_gene,fill = variable_type)) +
         geom_density(alpha = 0.5)
     }
@@ -4950,7 +5125,7 @@ server <- function(input, output, session) {
   })
 
   output$corrected_SVA_nsv_print <- renderPrint({
-    if (isTruthy(uncorrected_SVA_nsv())) {
+    if (isTruthy(corrected_SVA_nsv())) {
       print(paste("The Number of Estimated Surrogate Variables are:", corrected_SVA_nsv()))
     }
   })
