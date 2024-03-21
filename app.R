@@ -1511,12 +1511,12 @@ server <- function(input, output, session) {
       } else {
         shiny::selectInput("batch_correction_method",
                            "Method of Batch Correction",
-                           c("Select", "Limma", "ComBat", "Mean Centering", "Harman", "RUVg","SVA"))
+                           c("Select", "Limma", "ComBat", "Quantile Normalization", "Mean Centering", "Harman", "RUVg","SVA"))
       }
     } else {
       shiny::selectInput("batch_correction_method",
                          "Method of Batch Correction",
-                         c("Select", "Limma", "ComBat", "Mean Centering", "Harman", "RUVg","SVA"))
+                         c("Select", "Limma", "ComBat", "Quantile Normalization", "Mean Centering", "Harman", "RUVg","SVA"))
     }
 
 
@@ -1621,7 +1621,6 @@ server <- function(input, output, session) {
     uncorrected_numeric_matrix <- uncorrected_matrix_filtered()
     rownames(uncorrected_numeric_matrix) <- uncorrected_numeric_matrix[,1]
     uncorrected_numeric_matrix <- uncorrected_numeric_matrix[,-1]
-    print(head(as_tibble(uncorrected_numeric_matrix)))
 
     if (input$Log_Choice){
       uncorrected_numeric_matrix <- log2(uncorrected_numeric_matrix + 1)
@@ -3579,6 +3578,13 @@ server <- function(input, output, session) {
 
 
   #### Batch Criteria Selection ------------------------------------------------
+  observe({
+    req(input$batch_correction_method)
+    if (input$batch_correction_method == "Quantile Normalization") {
+      updateCheckboxInput(session,"QuantNorm",value = FALSE)
+    }
+  })
+  
   # Initial batch selection
   output$rendInit_Batch_Select <- shiny::renderUI({
     req(aligned_meta_file())
@@ -3934,6 +3940,15 @@ server <- function(input, output, session) {
         })
         batch_correction
       }
+    }else if (input$batch_correction_method == "Quantile Normalization") {
+      withProgress(message = "Processing", value = 0, {
+        incProgress(0.5, detail = "Quantile Normalization")
+        uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
+        uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
+        batch_correction <- uncorrected_numeric_matrix
+        incProgress(0.5, detail = "Complete!")
+      })
+      batch_correction
     }else if(input$batch_correction_method == "Mean Centering"){
       if (isTruthy(batch1_choices())) {
         withProgress(message = "Processing", value = 0, {
