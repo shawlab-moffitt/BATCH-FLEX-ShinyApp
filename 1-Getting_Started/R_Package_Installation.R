@@ -23,11 +23,10 @@ if (R.major >= 4 & R.minor >= 1) {
 ##--Other R packages--##
 
 ## Check if packages are installed
-packages <- c("shiny","shinythemes","shinyjqui","limma","tidyr","bapred","folio",
-              "dplyr","DT","ggplot2","ggpubr","metafolio","corrplot","readr","stringr",
-              "plotly","tidyverse","shinycssloaders","zip","glue","factoextra",
-              "FactoMineR","magick","reshape2","ggfortify","ggplotify","draw",
-              "clValid","shinyWidgets","umap","statVisual","svglite","tabula")
+c("shiny","shinyjqui","limma","bapred","DT","shinycssloaders","metafolio","corrplot",
+  "readr","dplyr","tidyverse","zip","glue","factoextra","FactoMineR","magick","ggfortify",
+  "ggplotify","draw","clValid","shinyWidgets","tidyr","umap","plotly","statVisual",
+  "svglite","tabula","folio","bslib","readtext","shinythemes","uuid","stringr")
 installed_packages <- packages %in% rownames(installed.packages())
 if (any(installed_packages == FALSE)) {
   install.packages(packages[!installed_packages])
