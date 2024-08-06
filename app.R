@@ -2861,7 +2861,7 @@ server <- function(input, output, session) {
           }
         }
         if (isTruthy(input$QuantNorm)) {
-          if (input$QuantNorm) {
+          if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
             FileCheckAlerts_list <- c(FileCheckAlerts_list,
                                       paste("Input matrix quantile normalized."))
             FileCheckAlerts_listL <- c(FileCheckAlerts_listL,
@@ -2890,7 +2890,7 @@ server <- function(input, output, session) {
         }
       }
       if (isTruthy(input$QuantNorm)) {
-        if (input$QuantNorm) {
+        if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
           FileCheckAlerts_list <- c(FileCheckAlerts_list,
                                     paste("Input matrix quantile normalized."))
           FileCheckAlerts_listL <- c(FileCheckAlerts_listL,
@@ -2934,7 +2934,7 @@ server <- function(input, output, session) {
           }
         }
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             FileCheckAlerts_list <- c(FileCheckAlerts_list,
                                       paste("Input matrix quantile normalized."))
             FileCheckAlerts_listR <- c(FileCheckAlerts_listR,
@@ -2955,7 +2955,7 @@ server <- function(input, output, session) {
                                     paste("Input matrix log2 transformed."))
         }
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             FileCheckAlerts_list <- c(FileCheckAlerts_list,
                                       paste("Input matrix quantile normalized."))
             FileCheckAlerts_listR <- c(FileCheckAlerts_listR,
@@ -2984,7 +2984,7 @@ server <- function(input, output, session) {
         }
       }
       if (isTruthy(input$QuantNorm2)) {
-        if (input$QuantNorm2) {
+        if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
           FileCheckAlerts_list <- c(FileCheckAlerts_list,
                                     paste("Input matrix quantile normalized."))
           FileCheckAlerts_listR <- c(FileCheckAlerts_listR,
@@ -3126,35 +3126,6 @@ server <- function(input, output, session) {
     
     if (input$batch_correction_method2 == "ComBatseq") {
       batch_correction <- ComBatseq_react2()
-      #if (is.null(input$covariate_choices_ComBatseq)){
-      #  model_matrix <- NULL
-      #} else {
-      #  counter <- 0
-      #  for (covariate in 1:length(input$covariate_choices_ComBatseq)){
-      #    variable_object <- input$covariate_choices_ComBatseq[covariate]
-      #    if (counter == 0){
-      #      total_covariates <- paste(variable_object, sep = "")
-      #      counter <- counter + 1
-      #    } else {
-      #      total_covariates <- paste(total_covariates,"+", variable_object, sep = "")
-      #      counter <- counter + 1
-      #    }
-      #  }
-      #  model_matrix <- stats::model.matrix(reformulate(total_covariates), data = as.data.frame(aligned_meta_file))
-      #}
-      #
-      #if (isTruthy(input$batch1_choices_ComBatseq)) {
-      #  withProgress(message = "Processing", value = 0, {
-      #    incProgress(0.5, detail = "Running ComBatseq Batch Correction")
-      #    combatseq_corrected <- sva::ComBat_seq(
-      #      as.matrix(uncorrected_numeric_matrix),
-      #      batch = c(unlist(aligned_meta_file[,input$batch1_choices_ComBatseq])),
-      #      covar_mod = model_matrix
-      #    )
-      #    batch_correction <- combatseq_corrected
-      #    incProgress(0.5, detail = "Complete!")
-      #  })
-      #}
       if (exists("batch_correction")) {
         if (isTruthy(batch_correction)) {
           file_name <- paste("RNAseqCounts_CombatSeqCorrected_matrix","_",Sys.Date(),".tsv", sep = "")
@@ -3221,40 +3192,6 @@ server <- function(input, output, session) {
       # ComBatseq method
       if (input$batch_correction_method == "ComBatseq") {
         batch_correction <- ComBatseq_react1()
-        
-        #if (is.null(input$covariate_choices_ComBatseq) & is.null(input$covariate_choices_ComBatseq)) {
-        #  covar_raw <- 1
-        #  covar_nor <- 1
-        #} else {
-        #  covar_raw <- input$covariate_choices_ComBatseq
-        #  covar_nor <- input$covariate_choices_ComBatseq
-        #}
-        #if (is.null(batch1_choices1())) {
-        #  batchChoice <- input$batch1_choices_ComBatseq
-        #} else {
-        #  batchChoice <- batch1_choices1()
-        #}
-        #
-        ## Perform ComBatseq
-        #if (isTruthy(batchChoice)) {
-        #  if ((covar_raw == covar_nor) & (input$batch1_choices_ComBatseq == batchChoice)) {
-        #    batch_correction <- matrix2_Raw()
-        #  } else {
-        #    ## ComBatSeq
-        #    withProgress(message = "Processing", value = 0, {
-        #      incProgress(0.5, detail = "Running ComBatseq Batch Correction")
-        #      combatseq_corrected <- sva::ComBat_seq(
-        #        as.matrix(uncorrected_numeric_matrix),
-        #        batch = c(unlist(aligned_meta_file[,batchChoice])),
-        #        covar_mod = model_matrix()
-        #      )
-        #      batch_correction <- combatseq_corrected
-        #      incProgress(0.5, detail = "Complete!")
-        #    })
-        #  }
-        #} else {
-        #  batch_correction <- NULL
-        #}
         # Normalize
         if (isTruthy(batch_correction)) {
           #if (RawCountCheck()) {
@@ -3362,13 +3299,15 @@ server <- function(input, output, session) {
           }
           # Quantile Normalize counts
           if (isTruthy(input$QuantNorm)) {
-            if (input$QuantNorm){
-              withProgress(message = "Processing", value = 0, {
-                incProgress(0.5, detail = "Quantile Normalization")
-                uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
-                uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
-                incProgress(0.5, detail = "Complete!")
-              })
+            if (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization")) {
+              if (input$QuantNorm){
+                withProgress(message = "Processing", value = 0, {
+                  incProgress(0.5, detail = "Quantile Normalization")
+                  uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
+                  uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
+                  incProgress(0.5, detail = "Complete!")
+                })
+              }
             }
           } # Batch Correct
             if(input$batch_correction_method == "Uncorrected"){
@@ -3496,13 +3435,15 @@ server <- function(input, output, session) {
       }
       ## Quantile Normalize counts
       if (isTruthy(input$QuantNorm)) {
-        if (input$QuantNorm){
-          withProgress(message = "Processing", value = 0, {
-            incProgress(0.5, detail = "Quantile Normalization")
-            uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
-            uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
-            incProgress(0.5, detail = "Complete!")
-          })
+        if (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization")) {
+          if (input$QuantNorm){
+            withProgress(message = "Processing", value = 0, {
+              incProgress(0.5, detail = "Quantile Normalization")
+              uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
+              uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
+              incProgress(0.5, detail = "Complete!")
+            })
+          }
         }
       }
       ## Correct
@@ -3647,39 +3588,6 @@ server <- function(input, output, session) {
       # ComBatseq method
       if (input$batch_correction_method2 == "ComBatseq") {
         batch_correction <- ComBatseq_react2()
-        
-        #if (is.null(input$covariate_choices_ComBatseq) & is.null(input$covariate_choices_ComBatseq2)) {
-        #  covar_raw <- 1
-        #  covar_nor <- 1
-        #} else {
-        #  covar_raw <- input$covariate_choices_ComBatseq
-        #  covar_nor <- input$covariate_choices_ComBatseq2
-        #}
-        #if (is.null(batch1_choices2())) {
-        #  batchChoice <- input$batch1_choices_ComBatseq
-        #} else {
-        #  batchChoice <- batch1_choices2()
-        #}
-        #
-        ## Perform ComBatseq
-        #if (isTruthy(batchChoice)) {
-        #  if ((covar_raw == covar_nor) & (input$batch1_choices_ComBatseq == batchChoice)) {
-        #    batch_correction <- matrix2_Raw()
-        #  } else {
-        #    ## ComBatSeq
-        #    withProgress(message = "Processing", value = 0, {
-        #      incProgress(0.5, detail = "Running ComBatseq Batch Correction")
-        #      combatseq_corrected <- sva::ComBat_seq(
-        #        as.matrix(uncorrected_numeric_matrix),
-        #        batch = c(unlist(aligned_meta_file[,batchChoice])),
-        #        covar_mod = model_matrix2()
-        #      )
-        #      batch_correction <- combatseq_corrected
-        #      incProgress(0.5, detail = "Complete!")
-        #    })
-        #  }
-        #} else {
-        #  batch_correction <- NULL
         #}
         # Normalize
         if (isTruthy(batch_correction)) {
@@ -3788,13 +3696,15 @@ server <- function(input, output, session) {
         }
         # Quantile Normalize counts
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2){
-            withProgress(message = "Processing", value = 0, {
-              incProgress(0.5, detail = "Quantile Normalization")
-              uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
-              uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
-              incProgress(0.5, detail = "Complete!")
-            })
+          if (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization")) {
+            if (input$QuantNorm2){
+              withProgress(message = "Processing", value = 0, {
+                incProgress(0.5, detail = "Quantile Normalization")
+                uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
+                uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
+                incProgress(0.5, detail = "Complete!")
+              })
+            }
           }
         } # Batch Correct
         if(input$batch_correction_method2 == "Uncorrected"){
@@ -3922,13 +3832,15 @@ server <- function(input, output, session) {
       }
       ## Quantile Normalize counts
       if (isTruthy(input$QuantNorm2)) {
-        if (input$QuantNorm2){
-          withProgress(message = "Processing", value = 0, {
-            incProgress(0.5, detail = "Quantile Normalization")
-            uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
-            uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
-            incProgress(0.5, detail = "Complete!")
-          })
+        if (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization")) {
+          if (input$QuantNorm2){
+            withProgress(message = "Processing", value = 0, {
+              incProgress(0.5, detail = "Quantile Normalization")
+              uncorrected_numeric_matrix_proc <- preprocessCore::normalize.quantiles(as.matrix(uncorrected_numeric_matrix), keep.names = T)
+              uncorrected_numeric_matrix <- as.data.frame(uncorrected_numeric_matrix_proc)
+              incProgress(0.5, detail = "Complete!")
+            })
+          }
         }
       }
       ## Correct
@@ -4532,14 +4444,16 @@ server <- function(input, output, session) {
     logqn <- NULL
     qn <- NULL
     if (isTruthy(input$QuantNorm)) {
-      if (input$QuantNorm) {
-        qn <- paste("→ QuantNorm")
+      if (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization")) {
+        if (input$QuantNorm) {
+          qn <- paste("→ QuantNorm")
+        }
       }
     }
     if (RawCountCheck()) {
       if (input$Log_Choice_Raw) {
         if (isTruthy(input$QuantNorm)) {
-          if (input$QuantNorm) {
+          if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("→ Log2Trans → QuantNorm")
           } else {
             logqn <- paste("→ Log2Trans")
@@ -4553,7 +4467,7 @@ server <- function(input, output, session) {
     } else {
       if (input$Log_Choice) {
         if (isTruthy(input$QuantNorm)) {
-          if (input$QuantNorm) {
+          if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans → QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -4597,7 +4511,7 @@ server <- function(input, output, session) {
     if (RawCountCheck()) {
       if (input$Log_Choice_Raw) {
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("→ Log2Trans → QuantNorm")
           } else {
             logqn <- paste("→ Log2Trans")
@@ -4611,7 +4525,7 @@ server <- function(input, output, session) {
     } else {
       if (input$Log_Choice) {
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans → QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -4856,17 +4770,21 @@ server <- function(input, output, session) {
   uncorrected_PCA_react <- reactive({
     req(matrix1())
     withProgress(message = paste("Processing",matrix1Title_react()), value = 0, {
-      #withProgress(message = paste("Processing",matrix1Title_react()), value = 0, {
+      #withProgress(message = paste("Processing",matrix2Title_react()), value = 0, {
       incProgress(0.5, detail = "PCA Object")
-      mat <- matrix1()
       if (input$PCA_type == "Cluster Annotation"){
-        rownames(mat) <- NULL
+        mat <- matrix1()
+        row.names(mat) <- NULL
         mat <- as.data.frame(mat)
         mat <- mat[, sapply(mat, var) != 0]
         mat <- as.matrix(mat)
         pca <- cluster::pam(as.data.frame(t(mat)),input$cluster_number)
       } else if (input$PCA_type == "Meta Annotation"){
-        pca <- stats::prcomp(as.data.frame(t(mat)), scale. = TRUE)
+        mat <- matrix1()
+        mat_check <- apply(mat, 1, function(a) length(unique(a))==1)
+        mat_check_F <- names(mat_check[which(mat_check==FALSE)])
+        mat2 <- mat[mat_check_F,]
+        pca <- stats::prcomp(as.data.frame(t(mat2)), scale. = TRUE)
       }
       incProgress(0.5, detail = "Complete!")
     })
