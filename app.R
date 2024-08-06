@@ -4402,7 +4402,7 @@ server <- function(input, output, session) {
     if (RawCountCheck()) {
       if (input$Log_Choice_Raw) {
         if (isTruthy(input$QuantNorm)) {
-          if (input$QuantNorm) {
+          if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans_QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -4416,7 +4416,7 @@ server <- function(input, output, session) {
     } else {
       if (input$Log_Choice) {
         if (isTruthy(input$QuantNorm)) {
-          if (input$QuantNorm) {
+          if (input$QuantNorm & (!input$batch_correction_method %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans_QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -4570,7 +4570,7 @@ server <- function(input, output, session) {
     if (RawCountCheck()) {
       if (input$Log_Choice_Raw) {
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans_QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -4584,7 +4584,7 @@ server <- function(input, output, session) {
     } else {
       if (input$Log_Choice) {
         if (isTruthy(input$QuantNorm2)) {
-          if (input$QuantNorm2) {
+          if (input$QuantNorm2 & (!input$batch_correction_method2 %in% c("Uncorrected","Quantile Normalization"))) {
             logqn <- paste("Log2Trans_QuantNorm")
           } else {
             logqn <- paste("Log2Trans")
@@ -8305,16 +8305,16 @@ server <- function(input, output, session) {
   #)
   shiny::observeEvent(input$save_uncorrected_PCA_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_PCA_plot",input$save_uncorrected_PCA_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_plot",input$save_uncorrected_PCA_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_PCA_plot_forDlnd_react(),
                       height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
-      #print(paste(matrix1Title_react(),"PCA_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"PCA_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_PCA_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_PCA","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_PCA_plot_forDlnd_react()
@@ -8323,16 +8323,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_PCA_mc_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_PCA_mc_plot",input$save_uncorrected_PCA_mc_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_mc_plot",input$save_uncorrected_PCA_mc_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_PCA_multiple_components(),
                       height = input$pca_mcHeight, width = input$pca_mcWidth, units = input$pca_mcUnits)
-      #print(paste(matrix1Title_react(),"PCA_mc_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"PCA_mc_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_PCA_mc_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_PCA_MultipleComponents","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA_MultipleComponents","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_PCA_multiple_components()
@@ -8341,16 +8341,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_scree_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Scree_plot",input$save_uncorrected_scree_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Scree_plot",input$save_uncorrected_scree_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_scree_plot_react(),
                       height = input$pca_dtHeight, width = input$pca_dtWidth, units = input$pca_dtUnits)
-      #print(paste(matrix1Title_react(),"Scree_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"Scree_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_scree_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Scree_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Scree_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_scree_plot_react()
@@ -8359,15 +8359,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_PCA_components, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_PC_components",input$save_uncorrected_PCA_components, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PC_components",input$save_uncorrected_PCA_components, "_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(as.data.frame(uncorrected_PCA_details2()$x), file.path(temp_directory, file_name))
-      #print(paste(matrix1Title_react(),"PCA_details Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"PCA_details Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnld <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_PC_Components","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PC_Components","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- save_uncorrected_PCA_components()
@@ -8376,15 +8376,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_contribution_table, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_contribution_table",input$save_uncorrected_contribution_table, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_table",input$save_uncorrected_contribution_table, "_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorrected_PCA_individuals(), file.path(temp_directory, file_name))
-      #print(paste(matrix1Title_react(),"contribution_table Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"contribution_table Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_contribution_table <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- uncorrected_PCA_individuals()
@@ -8393,15 +8393,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_contribution_counts, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_contribution_counts",input$save_uncorrected_contribution_counts, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_counts",input$save_uncorrected_contribution_counts, "_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorrected_contribution_counts(), file.path(temp_directory, file_name))
-      #print(paste(matrix1Title_react(),"contribution_counts Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"contribution_counts Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_contribution_counts <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- uncorrected_contribution_counts()
@@ -8410,16 +8410,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_UMAP, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_UMAP",input$save_uncorrected_UMAP, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_UMAP",input$save_uncorrected_UMAP, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_UMAP_react(),
                       height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
-      #print(paste(matrix1Title_react(),"UMAP Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"UMAP Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_UMAP <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_UMAP","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_UMAP","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_UMAP_react()
@@ -8428,16 +8428,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_elbow_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_elbow_plot",input$save_uncorrected_elbow_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_elbow_plot",input$save_uncorrected_elbow_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_elbow_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix1Title_react(),"elbow_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"elbow_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_elbow_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_elbow_analysis()
@@ -8446,16 +8446,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_silhouette_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_silhouette_plot",input$save_uncorrected_silhouette_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_silhouette_plot",input$save_uncorrected_silhouette_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_silhouette_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix1Title_react(),"silhouette_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"silhouette_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_silhouette_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_silhouette_analysis()
@@ -8464,16 +8464,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_dunn_index_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_dunn_index_plot",input$save_uncorrected_dunn_index_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_dunn_index_plot",input$save_uncorrected_dunn_index_plot, "_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_dunn_index_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix1Title_react(),"dunn_index_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"dunn_index_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_dunn_index_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_dunn_index_analysis()
@@ -8482,18 +8482,18 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_heatmap, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(temp_directory, "/", gsub(" ","",matrix1Title_react()),"_heatmap",input$save_uncorrected_heatmap,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(temp_directory, "/", gsub(" ","",matrix1DlndTitle_react()),"_heatmap",input$save_uncorrected_heatmap,"_",Sys.Date(),".svg", sep = "")
       svg(filename = file_name, height = input$heatmapHeight, width = input$heatmapWidth)
       ComplexHeatmap::draw(uncorrected_heatmap())
       dev.off()
-      #print(paste(matrix1Title_react(),"heatmap Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"heatmap Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   
   output$dnldsave_uncorrected_heatmap <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Heatmap","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Heatmap","_",Sys.Date(),".svg")
     },
     content = function(file) {
       svg(filename = file, height = input$heatmapHeight, width = input$heatmapWidth)
@@ -8521,16 +8521,16 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_uncorrected_barplot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Bar_plot",input$save_uncorrected_barplot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot",input$save_uncorrected_barplot,"_",Sys.Date(),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = uncorr_bar_plot_react(),
              height = input$barPHeight, width = input$barPWidth, units = input$barPUnits)
-      #print(paste(matrix1Title_react(),"Bar_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"Bar_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_barplot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Bar_plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorr_bar_plot_react()
@@ -8540,15 +8540,15 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorr_avg_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Average_Heterogeneity_",input$save_uncorr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_",input$save_uncorr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorr_avg_het_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix1Title_react()," Average_Heterogeneity Ready for Zip"))
+      #print(paste0(matrix1DlndTitle_react()," Average_Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorr_avg_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1Title_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_avg_het_react()
@@ -8557,15 +8557,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorr_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Heterogeneity_",input$save_uncorr_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_",input$save_uncorr_het_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorr_het_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix1Title_react()," Heterogeneity Ready for Zip"))
+      #print(paste0(matrix1DlndTitle_react()," Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorr_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1Title_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_het_react()
@@ -8575,15 +8575,15 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorr_avg_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Average_Eveness_",input$save_uncorr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_",input$save_uncorr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorr_avg_evn_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix1Title_react()," Average_Eveness Ready for Zip"))
+      #print(paste0(matrix1DlndTitle_react()," Average_Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorr_avg_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1Title_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_avg_evn_react()
@@ -8592,15 +8592,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorr_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Eveness_",input$save_uncorr_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_",input$save_uncorr_evn_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(uncorr_evn_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix1Title_react()," Eveness Ready for Zip"))
+      #print(paste0(matrix1DlndTitle_react()," Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorr_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1Title_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_evn_react()
@@ -8610,16 +8610,16 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorrected_RLE_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_RLE_plot",input$save_uncorrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_RLE_plot",input$save_uncorrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_RLE(),
                       height = input$rleHeight, width = input$rleWidth, units = input$rleUnits)
-      #print(paste(matrix1Title_react(),"RLE_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"RLE_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_RLE_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_RLE_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_RLE_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_RLE()
@@ -8628,16 +8628,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_EV_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_EV_plot",input$save_uncorrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_EV_plot",input$save_uncorrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_EV(),
                       height = input$exp_varHeight, width = input$exp_varWidth, units = input$exp_varUnits)
-      #print(paste(matrix1Title_react(),"EV_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"EV_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_EV_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_EV_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_EV_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_EV()
@@ -8646,16 +8646,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_pvca_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_PVCA_Plot",input$save_uncorrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot",input$save_uncorrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = pvca_uncorr_react(),
                       height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
-      #print(paste(matrix1Title_react(),"PVCA_Plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"PVCA_Plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_pvca_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- pvca_uncorr_react()
@@ -8664,16 +8664,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_SVA_probability_density, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_SVA_probability_density",input$save_uncorrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_SVA_probability_density",input$save_uncorrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = uncorrected_SVA_probability_ggplot(),
              height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
-      #print(paste(matrix1Title_react(),"SVA_probability_density Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"SVA_probability_density Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_SVA_probability_density <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- uncorrected_SVA_probability_ggplot()
@@ -8699,16 +8699,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_Box_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_Box_plot",input$save_uncorrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Box_plot",input$save_uncorrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = CohortBPPlot_react(),
              height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
-      #print(paste(matrix1Title_react(),"Box_plot Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"Box_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_Box_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Box_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Box_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- CohortBPPlot_react()
@@ -8717,15 +8717,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_Box_plot_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1Title_react()),"_BoxPlot_data",input$save_uncorrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data",input$save_uncorrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(CohortBPPlot_df_react(), file.path(temp_directory, file_name))
-      #print(paste(matrix1Title_react(),"BoxPlot_data Ready for Zip"))
+      #print(paste(matrix1DlndTitle_react(),"BoxPlot_data Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_uncorrected_Box_plot_df <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- CohortBPPlot_df_react()
@@ -8735,23 +8735,23 @@ server <- function(input, output, session) {
   ## Matrix 2 ---------------------------------------------------------------
   #shiny::observeEvent(input$save_corrected_matrix, {
   #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix2Title_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", Sys.Date(),".tsv", sep = "")
   #    df <- as.data.frame(matrix2())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
   #    readr::write_tsv(df, file.path(temp_directory, file_name))
-  #    print(paste(matrix2Title_react(),"matrix Ready for Zip"))
+  #    print(paste(matrix2DlndTitle_react(),"matrix Ready for Zip"))
   #    incProgress(1, detail = "Complete!")
   #  })
   #})
   #shiny::observeEvent(input$save_corrected_matrixZip, {
   #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix2Title_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", Sys.Date(),".tsv", sep = "")
   #    df <- as.data.frame(matrix2())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
   #    readr::write_tsv(df, file.path(temp_directory, file_name))
-  #    print(paste(matrix2Title_react(),"matrix Ready for Zip"))
+  #    print(paste(matrix2DlndTitle_react(),"matrix Ready for Zip"))
   #    incProgress(1, detail = "Complete!")
   #  })
   #})
@@ -8779,7 +8779,7 @@ server <- function(input, output, session) {
   )
   #output$dnldsave_corrected_matrixZip <- downloadHandler(
   #  filename = function() {
-  #    paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Matrix","_",Sys.Date(),".tsv")
+  #    paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Matrix","_",Sys.Date(),".tsv")
   #  },
   #  content = function(file) {
   #    df <- as.data.frame(matrix2())
@@ -8790,16 +8790,16 @@ server <- function(input, output, session) {
   #)
   shiny::observeEvent(input$save_corrected_PCA_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_PCA_plot",input$save_corrected_PCA_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_plot",input$save_corrected_PCA_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_PCA_plot_forDlnd_react(),
                       height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
-      #print(paste(matrix2Title_react(),"PCA_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"PCA_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_PCA_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_PCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_PCA_plot_forDlnd_react()
@@ -8808,16 +8808,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_PCA_mc_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_PCA_mc_plot",input$save_corrected_PCA_mc_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_mc_plot",input$save_corrected_PCA_mc_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_PCA_multiple_components(),
                       height = input$pca_mcHeight, width = input$pca_mcWidth, units = input$pca_mcUnits)
-      #print(paste(matrix2Title_react(),"PCA_mc_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"PCA_mc_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_PCA_mc_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_PCA_Multiple_Components_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Multiple_Components_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_PCA_multiple_components()
@@ -8826,16 +8826,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_scree_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Scree_plot",input$save_corrected_scree_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Scree_plot",input$save_corrected_scree_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_scree_plot_react(),
                       height = input$pca_dtHeight, width = input$pca_dtWidth, units = input$pca_dtUnits)
-      #print(paste(matrix2Title_react(),"Scree_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"Scree_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_scree_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Scree_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Scree_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_scree_plot_react()
@@ -8844,15 +8844,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_PCA_components, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_PC_components",input$save_corrected_PCA_components,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PC_components",input$save_corrected_PCA_components,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(as.data.frame(corrected_PCA_details2()$x), file.path(temp_directory, file_name))
-      #print(paste(matrix2Title_react(),"PCA_details Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"PCA_details Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_PCA_components <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_PC_Components","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PC_Components","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- corrected_PCA_details2()
@@ -8861,15 +8861,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_contribution_table, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_contribution_table",input$save_corrected_contribution_table,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_table",input$save_corrected_contribution_table,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corrected_PCA_individuals(), file.path(temp_directory, file_name))
-      #print(paste(matrix2Title_react(),"contribution_table Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"contribution_table Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_contribution_table <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- corrected_PCA_individuals()
@@ -8878,15 +8878,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_contribution_counts, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_contribution_counts",input$save_corrected_contribution_counts,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_counts",input$save_corrected_contribution_counts,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corrected_contribution_counts(), file.path(temp_directory, file_name))
-      #print(paste(matrix2Title_react(),"contribution_counts Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"contribution_counts Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_contribution_counts <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- corrected_contribution_counts()
@@ -8895,16 +8895,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_UMAP, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_UMAP",input$save_corrected_UMAP,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_UMAP",input$save_corrected_UMAP,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_UMAP_react(),
                       height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
-      #print(paste(matrix2Title_react(),"UMAP Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"UMAP Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_UMAP <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_UMAP","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_UMAP","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_UMAP_react()
@@ -8913,16 +8913,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_elbow_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_elbow_plot",input$save_corrected_elbow_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_elbow_plot",input$save_corrected_elbow_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_elbow_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix2Title_react(),"elbow_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"elbow_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_elbow_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_elbow_analysis()
@@ -8931,16 +8931,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_silhouette_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_silhouette_plot",input$save_corrected_silhouette_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_silhouette_plot",input$save_corrected_silhouette_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_silhouette_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix2Title_react(),"silhouette_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"silhouette_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_silhouette_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_silhouette_analysis()
@@ -8949,16 +8949,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_dunn_index_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_dunn_index_plot",input$save_corrected_dunn_index_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_dunn_index_plot",input$save_corrected_dunn_index_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_dunn_index_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
-      #print(paste(matrix2Title_react(),"dunn_index_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"dunn_index_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_dunn_index_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_dunn_index_analysis()
@@ -8967,17 +8967,17 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_heatmap, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(temp_directory,"/",gsub(" ","",matrix2Title_react()),"_heatmap",input$save_corrected_heatmap,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(temp_directory,"/",gsub(" ","",matrix2DlndTitle_react()),"_heatmap",input$save_corrected_heatmap,"_",Sys.Date(),".svg", sep = "")
       svg(filename = file_name, height = input$heatmapHeight, width = input$heatmapWidth)
       ComplexHeatmap::draw(corrected_heatmap())
       dev.off()
-      #print(paste(matrix2Title_react(),"heatmap Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"heatmap Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_heatmap <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Heatmap","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Heatmap","_",Sys.Date(),".svg")
     },
     content = function(file) {
       svg(filename = file, height = input$heatmapHeight, width = input$heatmapWidth)
@@ -8988,16 +8988,16 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_corrected_barplot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Bar_plot",input$save_corrected_barplot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot",input$save_corrected_barplot,"_",Sys.Date(),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = corr_bar_plot_react(),
              height = input$barPHeight, width = input$barPWidth, units = input$barPUnits)
-      #print(paste(matrix2Title_react(),"Bar_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"Bar_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_barplot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Bar_plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corr_bar_plot_react()
@@ -9007,15 +9007,15 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corr_avg_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Average_Heterogeneity_",input$save_corr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_",input$save_corr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corr_avg_het_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix2Title_react()," Average_Heterogeneity Ready for Zip"))
+      #print(paste0(matrix2DlndTitle_react()," Average_Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corr_avg_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2Title_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_avg_het_react()
@@ -9024,15 +9024,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corr_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Heterogeneity_",input$save_corr_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_",input$save_corr_het_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corr_het_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix2Title_react()," Heterogeneity Ready for Zip"))
+      #print(paste0(matrix2DlndTitle_react()," Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corr_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2Title_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_het_react()
@@ -9042,15 +9042,15 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corr_avg_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Average_Eveness_",input$save_corr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_",input$save_corr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corr_avg_evn_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix2Title_react()," Average_Eveness Ready for Zip"))
+      #print(paste0(matrix2DlndTitle_react()," Average_Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corr_avg_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2Title_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_avg_evn_react()
@@ -9059,15 +9059,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corr_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Eveness_",input$save_corr_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_",input$save_corr_evn_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(corr_evn_react(), file.path(temp_directory, file_name))
-      #print(paste0(matrix2Title_react()," Eveness Ready for Zip"))
+      #print(paste0(matrix2DlndTitle_react()," Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corr_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2Title_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_evn_react()
@@ -9077,16 +9077,16 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corrected_RLE_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_RLE_plot",input$save_corrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_RLE_plot",input$save_corrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_RLE(),
                       height = input$rleHeight, width = input$rleWidth, units = input$rleUnits)
-      #print(paste(matrix2Title_react(),"RLE_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"RLE_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_RLE_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_RLE_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_RLE_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_RLE()
@@ -9095,16 +9095,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_EV_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_EV_plot",input$save_corrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_EV_plot",input$save_corrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_EV(),
                       height = input$exp_varHeight, width = input$exp_varWidth, units = input$exp_varUnits)
-      #print(paste(matrix2Title_react(),"EV_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"EV_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_EV_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_EV_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_EV_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_EV()
@@ -9113,16 +9113,16 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_pvca_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_PVCA_Plot",input$save_corrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot",input$save_corrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = pvca_corr_react(),
                       height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
-      #print(paste(matrix2Title_react(),"PVCA_Plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"PVCA_Plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_pvca_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- pvca_corr_react()
@@ -9131,16 +9131,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_SVA_probability_density, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_SVA_probability_density",input$save_corrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_SVA_probability_density",input$save_corrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_SVA_probability_ggplot(),
                       height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
-      #print(paste(matrix2Title_react(),"SVA_probability_density Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"SVA_probability_density Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_SVA_probability_density <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- corrected_SVA_probability_ggplot()
@@ -9149,16 +9149,16 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_Box_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_Box_plot",input$save_corrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Box_plot",input$save_corrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = CohortBPPlot_corr_react(),
                       height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
-      #print(paste(matrix2Title_react(),"Box_plot Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"Box_plot Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_Box_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_Box_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Box_Plot","_",Sys.Date(),".svg")
     },
     content = function(file) {
       p <- CohortBPPlot_corr_react()
@@ -9167,15 +9167,15 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_Box_plot_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2Title_react()),"_BoxPlot_data",input$save_corrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data",input$save_corrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
       readr::write_tsv(CohortBPPlot_corr_df_react(), file.path(temp_directory, file_name))
-      #print(paste(matrix2Title_react(),"BoxPlot_data Ready for Zip"))
+      #print(paste(matrix2DlndTitle_react(),"BoxPlot_data Ready for Zip"))
       incProgress(1, detail = "Complete!")
     })
   })
   output$dnldsave_corrected_Box_plot_df <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2Title_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
     },
     content = function(file) {
       df <- CohortBPPlot_corr_df_react()
