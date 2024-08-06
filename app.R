@@ -2077,6 +2077,9 @@ server <- function(input, output, session) {
       if (all(mat == floor(mat))) {
         updateCheckboxInput(session,"RawCountInput", value = T)
         RawCountCheck(TRUE)
+      } else {
+        updateCheckboxInput(session,"RawCountInput", value = F)
+        RawCountCheck(FALSE)
       }
       
       #uncorrected_matrix_nodupes$filter <- apply(
@@ -4673,26 +4676,6 @@ server <- function(input, output, session) {
                            value = 2
                   )
       )
-      #} else {
-      #  shiny::fluidRow(
-      #    shiny::column(6,
-      #                  p(),
-      #                  shiny::uiOutput("Matrix1title"),
-      #                  uiOutput("rendMatrix1Head"),
-      #                  DT::dataTableOutput("uncorrected_matrix_output"),
-      #                  p(),
-      #                  shiny::downloadButton("dnldsave_uncorrected_matrix","Dowload Single Table")
-      #    ),
-      #    shiny::column(6,
-      #                  p(),
-      #                  shiny::uiOutput("Matrix2title"),
-      #                  uiOutput("rendMatrix2Head"),
-      #                  DT::dataTableOutput("corrected_matrix"),
-      #                  p(),
-      #                  shiny::downloadButton("dnldsave_corrected_matrix","Dowload Single Table")
-      #    )
-      #  )
-      #}
     } else {
       shiny::fluidRow(
         shiny::column(6,
