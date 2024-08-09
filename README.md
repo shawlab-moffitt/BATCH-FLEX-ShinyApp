@@ -82,7 +82,7 @@ Users can also visualize unwanted variation derived from the batch effect using 
 
 ![image](https://github.com/user-attachments/assets/9ecc1b1e-bbbd-4ff8-ba3f-9951895f7168)
 
-![image](https://github.com/user-attachments/assets/b7069483-bd83-49d7-966a-b64aa94e3efa)
+![image](https://github.com/user-attachments/assets/7f497f12-c148-4867-be62-5296b4b8fcad)
 
 ## Batch Effect Impact of Biological Variable
 BatchFLEX can determine the impact of a batch effect or biological variable of interest at an individual gene level using a **boxplot** and using statistical tests such as the Wilcoxon rank-sum test, the t-test, the Kruskal Wallis test, and ANOVA. The boxplot also allows users to assess if outliers are present at the gene level. Users can inspect genes of interest that are expected to remain relatively constant across samples to identify a batch effect. In the example below, beta actin was selected as a housekeeping gene, which should have little variability across samples, however, according to the ANOVA test, beta actin differs significantly between batches, indicating a probable batch effect. Alternatively, users can use **GSEA, Immune Deconvolution, PCA, and SVA** to assess the batch effect and to ensure that differences are still detectable in the variable of interest. BatchFLEX comes preloaded with approximately 100,000 gene sets, but also includes a user upload option for any gene sets not included within BatchFLEX. 
