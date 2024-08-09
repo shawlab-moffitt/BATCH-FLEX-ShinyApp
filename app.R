@@ -8,7 +8,9 @@ Example_MatrixCounts_File <- "Example_Data/Example_Thapsigargin_treated_RNASeqCo
 Example_MetaCounts_File <- "Example_Data/Example_Thapsigargin_treated_Meta.txt"
 
 # Homepage Files
-homepage_txt <- "Batchflex_Homepage/Intro_placeholder.txt"
+#homepage_txt <- "Batchflex_Homepage/Intro_placeholder.txt"
+homepage_filepath <- "Batchflex_Homepage/text_files/"
+homepage_tutorial_list <- list.files(homepage_filepath)
 
 # Housekeeping gene libraries
 Eisenberg_hkg_File <- "default_housekeeping/eisenberg.txt"
@@ -29,7 +31,12 @@ MM_HS_Conv_File <- "Mouse_To_Human_Gene_Conversion/hs_mm_homo_updated_v3_2023121
 # Read in back end data --------------------------------------------------------
 
 # Homepage Files
-homepage_text <- readtext::readtext(homepage_txt)
+#homepage_text <- readtext::readtext(homepage_txt)
+homepage_tutorial_text_list <- list()
+for (file in homepage_tutorial_list){
+  filename <- gsub("\\..*", "", file)
+  homepage_tutorial_text_list[[filename]] <- readtext::readtext(paste0(homepage_filepath,file))
+}
 
 ## Housekeeping genes
 Eisenberg_hkg <- read.delim(Eisenberg_hkg_File, header = F, sep = '\t')
@@ -188,6 +195,7 @@ ui <-
                                         )
                                       ),
                                       shiny::mainPanel(
+                                        uiOutput("rendDataLodedHelpText"),
                                         shiny::uiOutput("rendMatrixHeader"),
                                         uiOutput("rendExprHead"),
                                         DT::dataTableOutput("uncorrected_matrix_output_input"),
@@ -584,28 +592,32 @@ ui <-
                                                                                     ),
                                                                                     shiny::column(6,
                                                                                                   shiny::numericInput("SVAvarNum","Number of Variables",
-                                                                                                                      value = 300,min = 0, step =1)
+                                                                                                                      value = 300,min = 0, step = 1)
                                                                                     )
                                                                                   ),
                                                                                   shiny::fluidRow(
                                                                                     shiny::column(6,
                                                                                                   shiny::numericInput("NSV1","Update Estimated Num of Surrogate Variables Matrix A",
-                                                                                                                      value = NULL,min = 0, step = 1)
+                                                                                                                      value = 2,min = 2, step = 1)
                                                                                     ),
                                                                                     shiny::column(6,
                                                                                                   shiny::numericInput("NSV2","Update Estimated Num of Surrogate Variables Matrix B",
-                                                                                                                      value = NULL,min = 0, step = 1)
+                                                                                                                      value = 2,min = 2, step = 1)
                                                                                     )
                                                                                   ),
-                                                                                  shiny::h4("Download Surrogate Variables"),
-                                                                                  shiny::fluidRow(
-                                                                                    column(6,
-                                                                                           actionButton("save_SVA_surrogate_variables", "Add to Zip File Export")
-                                                                                    ),
-                                                                                    column(6,
-                                                                                           shiny::downloadButton("dnldsave_SVA_surrogate_variables","Dowload Meta with SVA")
-                                                                                    )
-                                                                                  )
+                                                                                  selectizeInput("SVAcolor","Color Plot By:",choices = NULL),
+                                                                                  uiOutput("rendSVAhover"),
+                                                                                  actionButton("CalcSurVar","Calculate Number of Estimated Surrogate Variables"),
+                                                                                  uiOutput("rendSurVarEstimates")
+                                                                                  #shiny::h4("Download Surrogate Variables"),
+                                                                                  #shiny::fluidRow(
+                                                                                  #  column(6,
+                                                                                  #         actionButton("save_SVA_surrogate_variables", "Add to Zip File Export")
+                                                                                  #  ),
+                                                                                  #  column(6,
+                                                                                  #         shiny::downloadButton("dnldsave_SVA_surrogate_variables","Dowload Meta with SVA")
+                                                                                  #  )
+                                                                                  #)
                                                           ),
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'box'",
                                                                                   #style = "overflow-y:scroll;overflow-x:hidden;max-height:70vh;position:relative;",
@@ -681,10 +693,10 @@ ui <-
                                                                                   fluidRow(
                                                                                     column(6,
                                                                                            numericInput("pcaFontSize","Font Size:",
-                                                                                                        value = 12, step = 1)
+                                                                                                        value = 14, step = 1)
                                                                                     ),
                                                                                     column(6,
-                                                                                           numericInput("PCAdotSize","Dot Size",value = 5)
+                                                                                           numericInput("PCAdotSize","Dot Size",value = 7)
                                                                                     )
                                                                                   ),
                                                                                   h4("Figure Download Parameters"),
@@ -877,6 +889,16 @@ ui <-
                                                           ),
                                                           shiny::conditionalPanel("input.uncorrected_panel == 'sva'",
                                                                                   p(),
+                                                                                  h4("SVA Scatter Plot Figure Parameters"),
+                                                                                  fluidRow(
+                                                                                    column(6,
+                                                                                           numericInput("SVAfontSize","Font Size:",
+                                                                                                        value = 14, step = 1)
+                                                                                    ),
+                                                                                    column(6,
+                                                                                           numericInput("SVAdotSize","Dot Size",value = 7)
+                                                                                    )
+                                                                                  ),
                                                                                   h4("Figure Download Parameters"),
                                                                                   fluidRow(
                                                                                     column(4,
@@ -1504,8 +1526,19 @@ ui <-
                                               shiny::column(6,
                                                             p(),
                                                             shiny::uiOutput("SVA1title"),
+                                                            shiny::fluidRow(
+                                                              shiny::column(6,
+                                                                            shiny::selectInput("SVAxAxis1","X-Axis Surrogate Variable",
+                                                                                               choices = c("SVA_1","SVA_2"), width = "70%")
+                                                              ),
+                                                              shiny::column(6,
+                                                                            shiny::selectInput("SVAyAxis1","X-Axis Surrogate Variable",
+                                                                                               choices = c("SVA_1","SVA_2"), selected = "SVA_2", width = "70%")
+                                                              )
+                                                            ),
                                                             uiOutput("rendSVAtextError1"),
-                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_SVA_probability_density")), type = 6),
+                                                            #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("uncorrected_SVA_probability_density")), type = 6),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotly::plotlyOutput("uncorrected_SVA_scatter")), type = 6),
                                                             p(),
                                                             shiny::fluidRow(
                                                               column(4, style = 'padding-right:0px;',
@@ -1516,13 +1549,35 @@ ui <-
                                                               )
                                                             ),
                                                             p(),
-                                                            verbatimTextOutput("uncorrected_SVA_nsv_print"),
+                                                            DT::dataTableOutput("uncorrected_SVA_scatter_df"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_uncorrected_SVA_scatter_df", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_uncorrected_SVA_scatter_df","Dowload Table")
+                                                              )
+                                                            )
+                                                            #p(),
+                                                            #verbatimTextOutput("uncorrected_SVA_nsv_print"),
                                               ),
                                               shiny::column(6,
                                                             p(),
                                                             shiny::uiOutput("SVA2title"),
+                                                            shiny::fluidRow(
+                                                              shiny::column(6,
+                                                                            shiny::selectInput("SVAxAxis2","X-Axis Surrogate Variable",
+                                                                                               choices = c("SVA_1","SVA_2"), width = "70%")
+                                                              ),
+                                                              shiny::column(6,
+                                                                            shiny::selectInput("SVAyAxis2","X-Axis Surrogate Variable",
+                                                                                               choices = c("SVA_1","SVA_2"), selected = "SVA_2", width = "70%")
+                                                              )
+                                                            ),
                                                             uiOutput("rendSVAtextError2"),
-                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_SVA_probability_density")), type = 6),
+                                                            #shinycssloaders::withSpinner(shinyjqui::jqui_resizable(shiny::plotOutput("corrected_SVA_probability_density")), type = 6),
+                                                            shinycssloaders::withSpinner(shinyjqui::jqui_resizable(plotly::plotlyOutput("corrected_SVA_scatter")), type = 6),
                                                             p(),
                                                             shiny::fluidRow(
                                                               column(4, style = 'padding-right:0px;',
@@ -1533,7 +1588,18 @@ ui <-
                                                               )
                                                             ),
                                                             p(),
-                                                            verbatimTextOutput("corrected_SVA_nsv_print"),
+                                                            DT::dataTableOutput("corrected_SVA_scatter_df"),
+                                                            p(),
+                                                            shiny::fluidRow(
+                                                              column(4, style = 'padding-right:0px;',
+                                                                     shiny::actionButton("save_corrected_SVA_scatter_df", "Add to Zip File Export")
+                                                              ),
+                                                              column(4, style = 'padding-left:0px;',
+                                                                     downloadButton("dnldsave_corrected_SVA_scatter_df","Dowload Table")
+                                                              )
+                                                            )
+                                                            #p(),
+                                                            #verbatimTextOutput("corrected_SVA_nsv_print"),
                                               )
                                             ),
                                             value = "sva"
@@ -1637,57 +1703,172 @@ ui <-
                                       bslib::layout_sidebar(
                                         sidebar = bslib::accordion(
                                           bslib::accordion_panel("Data Input",
-                                                                 shiny::column(10,
-                                                                               actionButton("load_example", "Load Example")),
-                                                                 shiny::column(10,
-                                                                               actionButton("log_matrix", "Log Dataset")),
-                                                                 shiny::column(10,
-                                                                               actionButton("select_species", "Select Species")),
-                                                                 shiny::column(10, 
-                                                                               actionButton("input_matrix", "Input Matrix")),
-                                                                 shiny::column(10,
-                                                                               actionButton("input_meta", "Input Meta")),
-                                                                 shiny::column(10, 
-                                                                               actionButton("select_batch", "Select Batch Variable"))
+                                                                 shiny::fluidRow(
+                                                                   shiny::column(12,
+                                                                                 actionButton("load_microarray_example", "Load Microarray Example")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("load_rnacounts_example", "Load RNACount Example")),
+                                                                   shiny::column(12, 
+                                                                                 actionButton("input_data", "Input Data")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("merge_data", "Merge Data")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("log_data", "Log Data")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("select_species", "Select Species")),
+                                                                   shiny::column(12, 
+                                                                                 actionButton("select_batch", "Select Batch Variable"))
+                                                                 )
+                                          ),
+                                          bslib::accordion_panel("Set Up Comparison",
+                                                                 shiny::fluidRow(
+                                                                   shiny::column(12,
+                                                                                 actionButton("evaluate_batch", "Set Up Batch Eval")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("evaluate_correction", "Set Up Correction Eval"))
+                                                                 )
                                           ),
                                           bslib::accordion_panel("Batch Correction",
                                                                  shiny::fluidRow(
-                                                                   shiny::column(10,
-                                                                                 actionButton("load_example", "Load Example")),
-                                                                   shiny::column(10,
-                                                                                 actionButton("test", "TEST"))
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_limma", "Limma")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_combat", "ComBat")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_combatseq", "ComBatSeq")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_qnorm", "Quantile Normalization")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_meancentering", "Mean Centering")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_harman", "Harman")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_ruvg_lognorm", "RUVg LogNorm")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_ruvg_counts", "RUVg Counts")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_correction_sva", "SVA"))
                                                                  )
                                           ),
                                           bslib::accordion_panel("Batch Evaluation",
                                                                  shiny::fluidRow(
-                                                                   shiny::column(10,
-                                                                                 actionButton("load_example", "Load Example")),
-                                                                   shiny::column(10,
-                                                                                 actionButton("test", "TEST"))
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_pca", "PCA")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_mcpca", "MC PCA")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_pcadetails", "PCA Details")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_umap", "UMAP")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_cluster", "Cluster Plots")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_heatmap", "Heatmap")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_diversity", "Diversity Evaluation")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_rle", "Relative Log Expression")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_ev", "Explanatory Variables")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_pvca", "PVCA")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_sva", "SVA")),
+                                                                   shiny::column(12,
+                                                                                 actionButton("batch_evaluation_box", "Box Plot")),
                                                                  )
                                           ),
                                           bslib::accordion_panel("Figure Adjustment",
                                                                  shiny::fluidRow(
-                                                                   shiny::column(10,
-                                                                                 actionButton("load_example", "Load Example")),
-                                                                   shiny::column(10,
-                                                                                 actionButton("test", "TEST"))
+                                                                   shiny::column(12,
+                                                                                 actionButton("figure_settings", "Figure Settings"))
                                                                  )
                                           ),
                                           bslib::accordion_panel("Data Export",
                                                                  shiny::fluidRow(
-                                                                   shiny::column(10,
-                                                                                 actionButton("load_example", "Load Example")),
-                                                                   shiny::column(10,
-                                                                                 actionButton("test", "TEST"))
+                                                                   shiny::column(12,
+                                                                                 actionButton("data_export", "Data Export"))
                                                                  )
                                           )
+                                          
                                         ),
-                                        uiOutput("video")
+                                        bslib::layout_column_wrap(
+                                          bslib::layout_columns(
+                                            bslib::card(bslib::card_header("Tutorial Video"),
+                                                        bslib::card_body(
+                                                          uiOutput("rendTutorialHelpText"),
+                                                          uiOutput("video")
+                                                          )
+                                            ),
+                                            bslib::card(bslib::card_header("Helpful Information"),
+                                                        bslib::card_body(shiny::htmlOutput("tutorial_text")),
+                                                        full_screen = TRUE
+                                            ),
+                                            col_widths = c(8,4)
+                                          ),
+                                          height = "850px",
+                                          max_height = "850px"
+                                        )
                                       )
                                     ),
                                     value = "tutorial"
                     )
+                    #shiny::tabPanel("Tutorial", 
+                    #                bslib::page_fillable(
+                    #                  bslib::layout_sidebar(
+                    #                    sidebar = bslib::accordion(
+                    #                      bslib::accordion_panel("Data Input",
+                    #                                             shiny::column(10,
+                    #                                                           actionButton("load_example", "Load Example")),
+                    #                                             shiny::column(10,
+                    #                                                           actionButton("log_matrix", "Log Dataset")),
+                    #                                             shiny::column(10,
+                    #                                                           actionButton("select_species", "Select Species")),
+                    #                                             shiny::column(10, 
+                    #                                                           actionButton("input_matrix", "Input Matrix")),
+                    #                                             shiny::column(10,
+                    #                                                           actionButton("input_meta", "Input Meta")),
+                    #                                             shiny::column(10, 
+                    #                                                           actionButton("select_batch", "Select Batch Variable"))
+                    #                      ),
+                    #                      bslib::accordion_panel("Batch Correction",
+                    #                                             shiny::fluidRow(
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("load_example", "Load Example")),
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("test", "TEST"))
+                    #                                             )
+                    #                      ),
+                    #                      bslib::accordion_panel("Batch Evaluation",
+                    #                                             shiny::fluidRow(
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("load_example", "Load Example")),
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("test", "TEST"))
+                    #                                             )
+                    #                      ),
+                    #                      bslib::accordion_panel("Figure Adjustment",
+                    #                                             shiny::fluidRow(
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("load_example", "Load Example")),
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("test", "TEST"))
+                    #                                             )
+                    #                      ),
+                    #                      bslib::accordion_panel("Data Export",
+                    #                                             shiny::fluidRow(
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("load_example", "Load Example")),
+                    #                                               shiny::column(10,
+                    #                                                             actionButton("test", "TEST"))
+                    #                                             )
+                    #                      )
+                    #                    ),
+                    #                    uiOutput("video")
+                    #                  )
+                    #                ),
+                    #                value = "tutorial"
+                    #)
   )
 
 
@@ -1699,11 +1880,11 @@ server <- function(input, output, session) {
   
   #bslib::bs_themer()
   # Homepage text
-  output$homepage_text <- renderText(homepage_text$text)
+  output$homepage_text <- renderText(homepage_tutorial_text_list[["Homepage"]]$text)
+  #output$homepage_text <- renderText(homepage_text$text)
   # Homepage homepage
   output$homepage <- renderImage({
-    list(src = "www/BatchFLEX_Figure_1_JD_V8_20240802.png",
-         #list(src = "www/BatchFLEX_Figure_1_JD_V6_20240710.png",
+    list(src = "www/BatchFLEX_Figure_1_JD_V8_20240809.png",
          contentType = 'image/png',
          width = 600,
          height = 800)
@@ -1718,14 +1899,14 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$shiny_github <- renderImage({
-    list(src = "www/shiny_github.jpg",
+    list(src = "www/shiny_github_nocopyright.png",
          contentType = 'image/jpg',
          width = 180,
          height = 180)
   }, deleteFile = FALSE)
   
   output$function_github <- renderImage({
-    list(src = "www/function_github.png",
+    list(src = "www/function_github_nocopyright.png",
          contentType = 'image/png',
          width = 180,
          height = 180)
@@ -1766,44 +1947,289 @@ server <- function(input, output, session) {
   })
   
   # Tutorial -------------------------------------------------------------------
-  observeEvent(input$load_example, {
-    output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
-    })
+  TutorialPlayed <- reactiveVal(0)
+  output$rendTutorialHelpText <- renderUI({
+    
+    if (TutorialPlayed() == 0) {
+      h3(HTML("<b>← Click on a topic to the left to view a tutorial video</b>"), 
+         style="text-align:center")
+    } else {
+      NULL
+    }
+    
   })
-  observeEvent(input$log_matrix, {
+  
+  # Tutorial Data Input
+  observeEvent(input$load_microarray_example, {
+    TutorialPlayed(1)
     output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/ylQkEUiehyg?playlist=ylQkEUiehyg&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
     })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["load_microarray_example"]]$text)
+  })
+  observeEvent(input$load_rnacounts_example, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/4JaukZLc2QY?playlist=4JaukZLc2QY&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["load_rnacounts_example"]]$text)
+  })
+  observeEvent(input$input_data, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/9Zwn2HBGfjM?playlist=9Zwn2HBGfjM&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["input_data"]]$text)
+  })
+  observeEvent(input$merge_data, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/24ZZKPyzVas?playlist=24ZZKPyzVas&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["merge_data"]]$text)
+  })
+  observeEvent(input$log_data, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/UToZcttTFzo?playlist=UToZcttTFzo&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["log_data"]]$text)
   })
   observeEvent(input$select_species, {
+    TutorialPlayed(1)
     output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/Awt3Ei-GX_U?playlist=Awt3Ei-GX_U&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
     })
-  })
-  observeEvent(input$input_matrix, {
-    output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
-    })
-  })
-  observeEvent(input$input_meta, {
-    output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
-    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["select_species"]]$text)
   })
   observeEvent(input$select_batch, {
+    TutorialPlayed(1)
     output$video <- renderUI({
-      HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/ZXtPsu95bdI?playlist=ZXtPsu95bdI&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
     })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["select_batch"]]$text)
+  })
+  # Set up Comparison
+  observeEvent(input$evaluate_batch, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/8R2UGGIYfU0?playlist=8R2UGGIYfU0&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["evaluate_batch"]]$text)
+  })
+  observeEvent(input$evaluate_correction, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/5oihHITsd6w?playlist=5oihHITsd6w&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["evaluate_correction"]]$text)
   })
   
-  # Homepage tutorial batch correction
+  # Tutorial Data Correction
+  observeEvent(input$batch_correction_limma, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/EwJDa5N5am8?playlist=EwJDa5N5am8&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_limma"]]$text)
+  })
+  observeEvent(input$batch_correction_combat, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/NgiI8I-2Uz0?playlist=NgiI8I-2Uz0&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_combat"]]$text)
+  })
+  observeEvent(input$batch_correction_combatseq, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/29nmaPexgPU?playlist=29nmaPexgPU&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_combatseq"]]$text)
+  })
+  observeEvent(input$batch_correction_qnorm, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/RpZg5m8_z1g?playlist=RpZg5m8_z1g&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_qnorm"]]$text)
+  })
+  observeEvent(input$batch_correction_meancentering, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/il0Sg-uiPO8?playlist=il0Sg-uiPO8&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_meancentering"]]$text)
+  })
+  observeEvent(input$batch_correction_harman, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/YdU6p2HBpRs?playlist=YdU6p2HBpRs&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_harman"]]$text)
+  })
+  observeEvent(input$batch_correction_ruvg_lognorm, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/XeOy-fjsGIo?playlist=XeOy-fjsGIo&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_ruvg_lognorm"]]$text)
+  })
+  observeEvent(input$batch_correction_ruvg_counts, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/nrpcFMC6EQM?playlist=nrpcFMC6EQM&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_ruvg_counts"]]$text)
+  })
+  observeEvent(input$batch_correction_sva, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/jcijaq-ypRo?playlist=jcijaq-ypRo&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_correction_sva"]]$text)
+  })
+  # Tutorial Batch Evaluation
+  observeEvent(input$batch_evaluation_pca, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/9Tlnqp1fGi4?playlist=9Tlnqp1fGi4&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_pca"]]$text)
+  })
+  observeEvent(input$batch_evaluation_mcpca, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/qNsfXBRm-5A?playlist=qNsfXBRm-5A&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_mcpca"]]$text)
+  })
+  observeEvent(input$batch_evaluation_pcadetails, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/_RMXgpK_dP8?playlist=_RMXgpK_dP8&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_pcadetails"]]$text)
+  })
+  observeEvent(input$batch_evaluation_umap, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/VNqotbPLH0g?playlist=VNqotbPLH0g&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_umap"]]$text)
+  })
+  observeEvent(input$batch_evaluation_cluster, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/WiQHMXlkxZY?playlist=WiQHMXlkxZY&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_cluster"]]$text)
+  })
+  observeEvent(input$batch_evaluation_heatmap, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/ulvA0YljtLc?playlist=ulvA0YljtLc&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_heatmap"]]$text)
+  })
+  observeEvent(input$batch_evaluation_diversity, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/bTV6mDgC-us?playlist=bTV6mDgC-us&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_diversity"]]$text)
+  })
+  observeEvent(input$batch_evaluation_rle, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/EKuNIle2kq4?playlist=EKuNIle2kq4&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_rle"]]$text)
+  })
+  observeEvent(input$batch_evaluation_ev, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/Z3Gd3Gti9Bs?playlist=Z3Gd3Gti9Bs&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_ev"]]$text)
+  })
+  observeEvent(input$batch_evaluation_pvca, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/aQ-UI5_Qvi8?playlist=aQ-UI5_Qvi8&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_pvca"]]$text)
+  })
+  observeEvent(input$batch_evaluation_sva, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/I1bBgVq6HfU?playlist=I1bBgVq6HfU&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_sva"]]$text)
+  })
+  observeEvent(input$batch_evaluation_box, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/pOrrC6gWHfg?playlist=pOrrC6gWHfg&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_box"]]$text)
+  })
+  # Tutorial Figure Settings
+  observeEvent(input$figure_settings, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/1j5YBZNJGTc?playlist=1j5YBZNJGTc&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["figure_settings"]]$text)
+  })
   
-  # Homepage tutorial batch evaluation
+  # Tutorial Data Export
+  observeEvent(input$data_export, {
+    TutorialPlayed(1)
+    output$video <- renderUI({
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/BTZWA8m4xBg?playlist=BTZWA8m4xBg&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+    })
+    output$tutorial_text <- renderText(homepage_tutorial_text_list[["data_export"]]$text)
+  })
   
-  # Homepage tutorial adjust figures
-  
-  # Homepage tutorial export
+  #observeEvent(input$load_example, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #observeEvent(input$log_matrix, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #observeEvent(input$select_species, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #observeEvent(input$input_matrix, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #observeEvent(input$input_meta, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #observeEvent(input$select_batch, {
+  #  output$video <- renderUI({
+  #    HTML('<iframe width="1200" height="600" src="//www.youtube.com/embed/wE4fhPzw2TY?playlist=wE4fhPzw2TY&&loop=1;rel=0&autoplay=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+  #  })
+  #})
+  #
+  ## Homepage tutorial batch correction
+  #
+  ## Homepage tutorial batch evaluation
+  #
+  ## Homepage tutorial adjust figures
+  #
+  ## Homepage tutorial export
   
   # Reactive Val Start --------------------------------------------------------
   #matrix_file_raw <- reactiveVal()
@@ -1828,31 +2254,24 @@ server <- function(input, output, session) {
     RawCountCheck(input$RawCountInput)
   })
   
-  #observe({
-  #  if (!RawCountCheck()) {
-  #    if (input$batch_correction_method == "ComBatseq" | input$batch_correction_method2 == "ComBatseq") {
-  #      showModal(modalDialog(
-  #        title = "Error with batch correction method",
-  #        paste("ComBatseq batch correction method is only to be used on unnormalized RNAseq count input data.",
-  #               "Please select different batch correction method or input RNAseq count data."),
-  #        easyClose = TRUE,
-  #        footer = paste("Click outside of box to exit message")
-  #      ))
-  #    }
-  #  } else {
-  #    #if (input$RawCountNorm != "none") {
-  #      if (input$batch_correction_method == "ComBatseq" | input$batch_correction_method2 == "ComBatseq") {
-  #        showModal(modalDialog(
-  #          title = "Warning with batch correction method",
-  #          paste("ComBatseq batch correction method is only to be used on unnormalized RNAseq count input data.",
-  #                 "The RNAseq count data input will be used in analysis."),
-  #          easyClose = TRUE,
-  #          footer = paste("Click outside of box to exit message")
-  #        ))
-  #      }
-  #    #}
-  #  }
-  #})
+  observe({
+    if (RawCountCheck()) {
+      if (isTruthy(input$RawMatTabs)) {
+        if (input$RawMatTabs == 1) {
+          if ((!input$batch_correction_method %in% c("Uncorrected","ComBatseq","RUVg")) | (!input$batch_correction_method2 %in% c("Uncorrected","ComBatseq","RUVg"))) {
+            showModal(modalDialog(
+              title = "Batch correction method applied in matrix transformation tab",
+              paste("The batch correction method you selected will be applied to this dataset and can be visualized in the following tab.
+                  The current tab is solely for viewing un-normalized RNASeq counts."),
+              easyClose = TRUE,
+              footer = paste("Click outside of box to exit message")
+            ))
+          }
+        }
+      }
+    }
+  })
+  
   
   # Batch Correction Inputs ---------------------------------------------------
   output$rendbatch_correction_method <- renderUI({
@@ -1920,6 +2339,19 @@ server <- function(input, output, session) {
   })
   
   # Data Input ----------------------------------------------------------------
+  
+  DataLoded <- reactiveVal(0)
+  output$rendDataLodedHelpText <- renderUI({
+    
+    if (DataLoded() == 0) {
+      h3(HTML("<b>← Upload user data or load an example dataset to get started</b>"), 
+         style="margin-top:80px")
+    } else {
+      NULL
+    }
+    
+  })
+  
   output$user_batch_info_file <- shiny::renderUI({
     if (input$batch_info == "No") {
       shiny::fluidRow(
@@ -1950,52 +2382,72 @@ server <- function(input, output, session) {
   })
   
   shiny::observeEvent(input$UseExpData, {
-    uncorrected_matrix_read <- readr::read_delim(Example_Matrix_File,
-                                                 delim = '\t',
-                                                 name_repair = "minimal",
-                                                 na = c("", "NA", "N/A"))
-    matrix_raw(uncorrected_matrix_read)
-    meta_read <- readr::read_delim(Example_Meta_File,
-                                   delim = '\t',
-                                   name_repair = "minimal",
-                                   na = c("", "NA", "N/A"))
-    meta_raw(meta_read)
-    MM_react(TRUE)
-    updateRadioButtons(session,"HumanOrMouse",selected = "Mouse")
-    updateSelectInput(session,"Init_Batch_Select",selected = "Study")
+    DataLoded(1)
+    withProgress(message = "Processing", value = 0, {
+      incProgress(0.5, detail = "Loading Micro Array Example data")
+      uncorrected_matrix_read <- readr::read_delim(Example_Matrix_File,
+                                                   delim = '\t',
+                                                   name_repair = "minimal",
+                                                   na = c("", "NA", "N/A"))
+      meta_read <- readr::read_delim(Example_Meta_File,
+                                     delim = '\t',
+                                     name_repair = "minimal",
+                                     na = c("", "NA", "N/A"))
+      incProgress(0.5, detail = "Complete!")
+      matrix_raw(uncorrected_matrix_read)
+      meta_raw(meta_read)
+      MM_react(TRUE)
+      updateRadioButtons(session,"HumanOrMouse",selected = "Mouse")
+      updateSelectInput(session,"Init_Batch_Select",selected = "Study")
+    })
   })
   shiny::observeEvent(input$UseRawExpData, {
-    uncorrected_matrix_read <- readr::read_delim(Example_MatrixCounts_File,
-                                                 delim = '\t',
-                                                 name_repair = "minimal",
-                                                 na = c("", "NA", "N/A"))
-    matrix_raw(uncorrected_matrix_read)
-    meta_read <- readr::read_delim(Example_MetaCounts_File,
-                                   delim = '\t',
-                                   name_repair = "minimal",
-                                   na = c("", "NA", "N/A"))
-    RawCountCheck(TRUE)
-    meta_raw(meta_read)
-    MM_react(FALSE)
-    updateRadioButtons(session,"HumanOrMouse",selected = "Human")
-    updateSelectInput(session,"Init_Batch_Select",selected = "study")
+    DataLoded(1)
+    withProgress(message = "Processing", value = 0, {
+      incProgress(0.5, detail = "Loading Micro Array Example data")
+      uncorrected_matrix_read <- readr::read_delim(Example_MatrixCounts_File,
+                                                   delim = '\t',
+                                                   name_repair = "minimal",
+                                                   na = c("", "NA", "N/A"))
+      matrix_raw(uncorrected_matrix_read)
+      meta_read <- readr::read_delim(Example_MetaCounts_File,
+                                     delim = '\t',
+                                     name_repair = "minimal",
+                                     na = c("", "NA", "N/A"))
+      incProgress(0.5, detail = "Complete!")
+      RawCountCheck(TRUE)
+      meta_raw(meta_read)
+      MM_react(FALSE)
+      updateRadioButtons(session,"HumanOrMouse",selected = "Human")
+      updateSelectInput(session,"Init_Batch_Select",selected = "study")
+    })
   })
   
   
   observe({
     if (isTruthy(input$uncorrected_matrix_input$datapath)) {
-      uncorrected_matrix_read <- readr::read_delim(input$uncorrected_matrix_input$datapath,
-                                                   delim = input$matrix_delim,
-                                                   name_repair = "minimal",
-                                                   na = c("", "NA", "N/A"))
-      matrix_raw(uncorrected_matrix_read)
+      DataLoded(1)
+      withProgress(message = "Processing", value = 0, {
+        incProgress(0.5, detail = "Loading User Matrix")
+        uncorrected_matrix_read <- readr::read_delim(input$uncorrected_matrix_input$datapath,
+                                                     delim = input$matrix_delim,
+                                                     name_repair = "minimal",
+                                                     na = c("", "NA", "N/A"))
+        incProgress(0.5, detail = "Complete!")
+        matrix_raw(uncorrected_matrix_read)
+      })
     }
     if (isTruthy(input$user_provided_batch_info$datapath)) {
-      meta_read <- readr::read_delim(input$user_provided_batch_info$datapath,
-                                     delim = input$meta_delim,
-                                     name_repair = "minimal",
-                                     na = c("", "NA", "N/A"))
-      meta_raw(meta_read)
+      DataLoded(1)
+      withProgress(message = "Processing", value = 0, {
+        incProgress(0.5, detail = "Loading User Meta Data")
+        meta_read <- readr::read_delim(input$user_provided_batch_info$datapath,
+                                       delim = input$meta_delim,
+                                       name_repair = "minimal",
+                                       na = c("", "NA", "N/A"))
+        incProgress(0.5, detail = "Complete!")
+        meta_raw(meta_read)
+      })
     }
     #updateRadioButtons(session,"HumanOrMouse",selected = "Human")
   })
@@ -2123,6 +2575,9 @@ server <- function(input, output, session) {
       
     }
     
+  })
+  observe({
+    updateNumericInput(session,"SVAvarNum",value = nrow(uncorrected_matrix()))
   })
   #output$rendRawCountNorm <- renderUI({
   #  if (RawCountCheck()) {
@@ -3013,7 +3468,7 @@ server <- function(input, output, session) {
   })
   output$download_logs <- downloadHandler(
     filename = function() {
-      paste("BatchFLEX_Processing_Notes_", Sys.Date(), ".txt", sep = "")
+      paste("BatchFLEX_Processing_Notes_", format(Sys.time(),format = "%Y%m%d_%H%M"), ".txt", sep = "")
     },
     content = function(file) {
       df <- FileCheckAlerts_react()
@@ -3059,8 +3514,8 @@ server <- function(input, output, session) {
     
     if (exists("batch_correction")) {
       if (isTruthy(batch_correction)) {
-        file_name <- paste("RNAseqCounts_matrix","_",Sys.Date(),".tsv", sep = "")
-        #file_name <- paste(gsub(" ","",matrix1Title_react()),"_RNAseqCounts_matrix", Sys.Date(),".tsv", sep = "")
+        file_name <- paste("RNAseqCounts_InputMatrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
+        #file_name <- paste(gsub(" ","",matrix1Title_react()),"_RNAseqCounts_matrix", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
         df <- as.data.frame(batch_correction)
         df <- cbind(data.frame(Genes = rownames(df)),
                     df)
@@ -3127,19 +3582,20 @@ server <- function(input, output, session) {
     uncorrected_numeric_matrix <- matrix_raw_ForOut()
     aligned_meta_file <- aligned_meta_file()
     
-    if (input$batch_correction_method2 == "ComBatseq") {
-      batch_correction <- ComBatseq_react2()
-      if (exists("batch_correction")) {
-        if (isTruthy(batch_correction)) {
-          file_name <- paste("RNAseqCounts_CombatSeqCorrected_matrix","_",Sys.Date(),".tsv", sep = "")
-          df <- as.data.frame(batch_correction)
-          df <- cbind(data.frame(Genes = rownames(df)),
-                      df)
-          readr::write_tsv(df, file.path(temp_directory, file_name))
-          batch_correction
-        }
-      }
-    } else {
+    #if (input$batch_correction_method2 == "ComBatseq") {
+    #  batch_correction <- ComBatseq_react2()
+    #  if (exists("batch_correction")) {
+    #    if (isTruthy(batch_correction)) {
+    #      file_name <- paste("RNAseqCounts_CombatSeqCorrected_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
+    #      df <- as.data.frame(batch_correction)
+    #      df <- cbind(data.frame(Genes = rownames(df)),
+    #                  df)
+    #      readr::write_tsv(df, file.path(temp_directory, file_name))
+    #      batch_correction
+    #    }
+    #  }
+    #} else if (input$batch_correction_method2 == "RUVg") {
+    if (input$batch_correction_method2 == "RUVg") {
       if(input$RUVg_housekeeping_selection == "UserInput"){
         req(input$RUVg_user_control_genes)
       }
@@ -3165,7 +3621,31 @@ server <- function(input, output, session) {
       }
       if (exists("batch_correction")) {
         if (isTruthy(batch_correction)) {
-          file_name <- paste("RNAseqCounts_RUVgCorrected_matrix","_",Sys.Date(),".tsv", sep = "")
+          file_name <- paste("RNAseqCounts_RUVgCorrected_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
+          df <- as.data.frame(batch_correction)
+          df <- cbind(data.frame(Genes = rownames(df)),
+                      df)
+          readr::write_tsv(df, file.path(temp_directory, file_name))
+          batch_correction
+        }
+      }
+    } else if (input$batch_correction_method2 == "Uncorrected") {
+      batch_correction <- matrix_raw_ForOut()
+      if (exists("batch_correction")) {
+        if (isTruthy(batch_correction)) {
+          file_name <- paste("RNAseqCounts_InputMatrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
+          df <- as.data.frame(batch_correction)
+          df <- cbind(data.frame(Genes = rownames(df)),
+                      df)
+          readr::write_tsv(df, file.path(temp_directory, file_name))
+          batch_correction
+        }
+      }
+    } else {
+      batch_correction <- ComBatseq_react2()
+      if (exists("batch_correction")) {
+        if (isTruthy(batch_correction)) {
+          file_name <- paste("RNAseqCounts_CombatSeqCorrected_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
           df <- as.data.frame(batch_correction)
           df <- cbind(data.frame(Genes = rownames(df)),
                       df)
@@ -3174,10 +3654,6 @@ server <- function(input, output, session) {
         }
       }
     }
-    
-    
-    
-    
     
   })
   
@@ -3568,7 +4044,7 @@ server <- function(input, output, session) {
     
     if (exists("batch_correction")) {
       if (isTruthy(batch_correction)) {
-        file_name <- paste(matrix1DlndTitle_react(),"_matrix","_",Sys.Date(),".tsv", sep = "")
+        file_name <- paste(matrix1DlndTitle_react(),"_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
         df <- as.data.frame(batch_correction)
         df <- cbind(data.frame(Genes = rownames(df)),
                     df)
@@ -3965,7 +4441,7 @@ server <- function(input, output, session) {
     
     if (exists("batch_correction")) {
       if (isTruthy(batch_correction)) {
-        file_name <- paste(matrix2DlndTitle_react(),"_matrix","_",Sys.Date(),".tsv", sep = "")
+        file_name <- paste(matrix2DlndTitle_react(),"_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
         df <- as.data.frame(batch_correction)
         df <- cbind(data.frame(Genes = rownames(df)),
                     df)
@@ -4211,7 +4687,7 @@ server <- function(input, output, session) {
   #  
   #  if (exists("batch_correction")) {
   #    if (isTruthy(batch_correction)) {
-  #      file_name <- paste(gsub(" ","_",matrix2Title_react()),"_matrix","_",Sys.Date(),".tsv", sep = "")
+  #      file_name <- paste(gsub(" ","_",matrix2Title_react()),"_matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
   #      df <- as.data.frame(batch_correction)
   #      df <- cbind(data.frame(Genes = rownames(df)),
   #                  df)
@@ -4253,7 +4729,13 @@ server <- function(input, output, session) {
   output$Matrix2titleRaw <- renderUI({
     req(matrix2_Raw())
     req(input$batch_correction_method2)
-    h3(paste(input$batch_correction_method2,"Corrected RNAseq Count Matrix"))
+    if (input$batch_correction_method2 == "RUVg") {
+      h3(paste(input$batch_correction_method2,"Corrected RNAseq Count Matrix"))
+    }  else if (input$batch_correction_method2 == "Uncorrected") {
+      h3(paste("Input RNAseq Count Matrix"))
+    } else {
+      h3(paste("ComBatseq Corrected RNAseq Count Matrix"))
+    }
     #h3(paste(matrix2Title_react()),"RNAseq count Matrix")
   })
   output$rendMatrix2HeadRaw <- renderUI({
@@ -7205,6 +7687,63 @@ server <- function(input, output, session) {
     )
   })
   
+  observe({
+    
+    VarChoices <- c(batch_names_from_meta()[-1])
+    if (isTruthy(input$uncorrected_SVA_variable_of_interest)) {
+      VarSelected <- input$uncorrected_SVA_variable_of_interest
+      updateSelectizeInput(session,"SVAcolor", choices = VarChoices, selected = VarSelected, server = T)
+    } 
+    
+  })
+  
+  output$rendSVAhover <- shiny::renderUI({
+    batch_choice1 <- batch1_choices1()
+    batch_choice2 <- batch1_choices2()
+    batch_choice <- unique(c(batch_choice1,batch_choice2))
+    VOI <- uncorrected_SVA_variable_of_interest2()
+    shiny::selectInput("SVAhover",
+                       "Information to Display on Hover:",
+                       choices = unlist(strsplit(batch_names_from_meta(), ",")),
+                       selected = c(batch_names_from_meta()[1],VOI,batch_choice),
+                       multiple = T)
+  })
+  
+  observeEvent(input$CalcSurVar, {
+    output$rendSurVarEstimates <- renderUI({
+      
+      shiny::fluidRow(
+        p(),
+        tags$style(type='text/css', '#uncorrected_SVA_nsv_print {white-space: pre-wrap;}'),
+        tags$style(type='text/css', '#corrected_SVA_nsv_print {white-space: pre-wrap;}'),
+        column(12,
+               h4(HTML("<b>Number of Estimated Surrogate Variables</b>"), 
+                  style="text-align:center"),
+               fluidRow(
+                 column(6,
+                        h5(HTML(paste("Matrix 1:",uncorrected_SVA_nsv())), 
+                           style="text-align:center")
+                        ),
+                 column(6,
+                        h5(HTML(paste("Matrix 2:",corrected_SVA_nsv())), 
+                           style="text-align:center")
+                        )
+               ),
+               hr(),
+               shiny::h4("Download Surrogate Variables"),
+               fluidRow(
+                 column(6,
+                        actionButton("save_SVA_surrogate_variables", "Add to Zip File Export")
+                 ),
+                 column(6,
+                        shiny::downloadButton("dnldsave_SVA_surrogate_variables","Dowload Meta with SVA")
+                 )
+               ))
+      )
+      
+    })
+  })
+  
   ## Matrix 1 -----------------------------------------------------------------
   
   SVA1_pass <- reactiveVal(1)
@@ -7220,7 +7759,7 @@ server <- function(input, output, session) {
       }
     }
   })
-  uncorrected_SVA_nsv <- reactive({
+  uncorrected_SVA_nsv <- eventReactive(input$CalcSurVar, {
     req(matrix1())
     if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
       svaMethod <- input$svaMethod
@@ -7238,13 +7777,36 @@ server <- function(input, output, session) {
       uncorrected_SVA_nsv
     }
   })
+  #uncorrected_SVA_nsv <- reactive({
+  #  req(matrix1())
+  #  if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
+  #    svaMethod <- input$svaMethod
+  #    svaVarNum <- input$SVAvarNum
+  #    Feature <- uncorrected_SVA_variable_of_interest2()
+  #    meta <- aligned_meta_file()
+  #    colnames(meta)[which(colnames(meta) == Feature)] <- "Feature"
+  #    withProgress(message = paste("Processing",matrix1Title_react()), value = 0, {
+  #      incProgress(0.5, detail = "Number of surrogate variables")
+  #      uncorrected_mod <- model.matrix(reformulate("Feature"), data = meta)
+  #      uncorrected_mod_null <- model.matrix(~1, data = meta)
+  #      uncorrected_SVA_nsv <- sva::num.sv(matrix1(), uncorrected_mod, method=svaMethod, vfilter = svaVarNum)
+  #      incProgress(0.5, detail = "Complete!")
+  #    })
+  #    uncorrected_SVA_nsv
+  #  }
+  #})
+  #observe({
+  #  n.sv <- uncorrected_SVA_nsv()
+  #  updateNumericInput(session,"NSV1", value = n.sv)
+  #})
   observe({
-    n.sv <- uncorrected_SVA_nsv()
-    updateNumericInput(session,"NSV1", value = n.sv)
+    n.sv <- input$NSV1
+    updateSelectInput(session,"SVAxAxis1", choices = sapply(seq(n.sv),function(x) paste0("SVA_",x)), selected = "SVA_1")
+    updateSelectInput(session,"SVAyAxis1", choices = sapply(seq(n.sv),function(x) paste0("SVA_",x)), selected = "SVA_2")
   })
   observe({
     if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
-      req(uncorrected_SVA_nsv())
+      #req(uncorrected_SVA_nsv())
       req(input$NSV1)
       req(matrix1())
       svaMethod <- input$svaMethod
@@ -7279,7 +7841,7 @@ server <- function(input, output, session) {
   })
   uncorrected_SVA_object <- reactive({
     if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
-      req(uncorrected_SVA_nsv())
+      #req(uncorrected_SVA_nsv())
       req(input$NSV1)
       req(matrix1())
       if (SVA1_pass() == 3) {
@@ -7295,26 +7857,60 @@ server <- function(input, output, session) {
           uncorrected_SVA_matrix <- as.matrix(matrix1())
           uncorrected_SVA_object <- sva::sva(uncorrected_SVA_matrix, uncorrected_mod, uncorrected_mod_null, n.sv = input$NSV1,
                                              numSVmethod = svaMethod, vfilter = svaVarNum)
+          save(list = ls(), file = "SVA_Env.RData",envir = environment())
           incProgress(0.5, detail = "Complete!")
         })
-        df <- as.data.frame(uncorrected_SVA_object$sv)
-        if (ncol(df) > 0) {
-          colnames(df) <- paste0("SVA_",matrix1Title_react(),"_Surrogate_Vars_",seq(ncol(df)))
-          df <- cbind(aligned_meta_file(),df)
-          uncorr_boxplot_meta_file(df)
+        #df <- as.data.frame(uncorrected_SVA_object$sv)
+        #if (ncol(df) > 0) {
+        #  colnames(df) <- paste0("SVA_",matrix1DlndTitle_react(),"_Surrogate_Vars_",seq(ncol(df)))
+        #  df <- cbind(aligned_meta_file(),df)
+        #  uncorr_boxplot_meta_file(df)
           uncorrected_SVA_object
-        }
+        #}
       }
     }
   })
   observe({
-    
+    df <- as.data.frame(uncorrected_SVA_object()$sv)
+    if (ncol(df) > 0) {
+      colnames(df) <- paste0("SVA_",matrix1DlndTitle_react(),"_SV_",seq(ncol(df)))
+      df <- cbind(aligned_meta_file(),df)
+      uncorr_boxplot_meta_file(df)
+    }
+  })
+  toListen <- reactive({
+    list(uncorr_boxplot_meta_file(),corr_boxplot_meta_file())
+  })
+  observe({
     #main_meta <- aligned_meta_file()
+    req(boxplot_meta_file())
     main_meta <- boxplot_meta_file()
     uncorr_meta <- uncorr_boxplot_meta_file()
     corr_meta <- corr_boxplot_meta_file()
+    #main_meta_new <- merge(main_meta,uncorr_meta[,which(!colnames(main_meta)[-1] %in% colnames(uncorr_meta))], all.x = T)
+    #main_meta_new <- merge(main_meta_new,corr_meta[,which(!colnames(main_meta)[-1] %in% colnames(corr_meta))], all.x = T)
+    #main_meta_new <- merge(main_meta,uncorr_meta, by.x = colnames(main_meta)[1], by.y = colnames(uncorr_meta)[1], all.x = T)
+    #main_meta_new <- merge(main_meta_new,corr_meta, by.x = colnames(main_meta)[1], by.y = colnames(corr_meta)[1], all.x = T)
+    #if (any(!colnames(uncorr_meta) %in% colnames(main_meta))) {
+    #  main_meta_new <- merge(main_meta,uncorr_meta, by.x = colnames(main_meta)[1], by.y = colnames(uncorr_meta)[1], all.x = T)
+    #}
+    #if (any(!colnames(corr_meta) %in% colnames(main_meta))) {
+    #  main_meta_new <- merge(main_meta_new,corr_meta, by.x = colnames(main_meta)[1], by.y = colnames(corr_meta)[1], all.x = T)
+    #}
+    #boxplot_meta_file(main_meta_new)
+    
+    #print("main_meta")
+    #print(head(main_meta))
+    #print("uncorr_meta")
+    #print(head(uncorr_meta))
+    #print("corr_meta")
+    #print(head(corr_meta))
     main_meta_new <- merge(main_meta,uncorr_meta, all.x = T)
+    #print("main_meta_new1")
+    #print(head(main_meta_new))
     main_meta_new <- merge(main_meta_new,corr_meta, all.x = T)
+    #print("main_meta_new2")
+    #print(head(main_meta_new))
     boxplot_meta_file(main_meta_new)
     
   })
@@ -7331,23 +7927,156 @@ server <- function(input, output, session) {
     }
   })
   
-  uncorrected_SVA_probability_ggplot <- reactive({
-    if (isTruthy(uncorrected_SVA_probability_df())) {
-      ggplot(uncorrected_SVA_probability_df(), aes(x = probability_association_of_each_gene,
-                                                   fill = variable_type)) +
-        geom_density(alpha = 0.5)
+  #uncorrected_SVA_probability_ggplot <- reactive({
+  #  if (isTruthy(uncorrected_SVA_probability_df())) {
+  #    ggplot(uncorrected_SVA_probability_df(), aes(x = probability_association_of_each_gene,
+  #                                                 fill = variable_type)) +
+  #      geom_density(alpha = 0.5)
+  #  }
+  #})
+  #
+  #output$uncorrected_SVA_probability_density <- renderPlot({
+  #  req(uncorrected_SVA_probability_ggplot())
+  #  uncorrected_SVA_probability_ggplot()
+  #})
+  output$uncorrected_SVA_nsv_print <- renderPrint({
+    if (isTruthy(uncorrected_SVA_nsv())) {
+      print(paste("Number of Estimated Surrogate Variables in Matrix 1:", uncorrected_SVA_nsv()))
+      #print(paste("The Number of Estimated Surrogate Variables are:", input$NSV1))
     }
   })
   
-  output$uncorrected_SVA_probability_density <- renderPlot({
-    req(uncorrected_SVA_probability_ggplot())
-    uncorrected_SVA_probability_ggplot()
-  })
-  output$uncorrected_SVA_nsv_print <- renderPrint({
-    if (isTruthy(uncorrected_SVA_nsv())) {
-      #print(paste("The Number of Estimated Surrogate Variables are:", uncorrected_SVA_nsv()))
-      print(paste("The Number of Estimated Surrogate Variables are:", input$NSV1))
+  uncorrected_SVA_scatter_df <- reactive({
+    
+    req(uncorrected_SVA_object())
+    df <- uncorrected_SVA_object()$sv
+    if (input$SVAxAxis1 != input$SVAyAxis1) {
+      colnames(df) <- sapply(seq(ncol(df)),function(x) paste0("SVA_",x))
+      rownames(df) <- colnames(matrix1())
+      meta <- aligned_meta_file()
+      batch_choice <- uncorrected_SVA_variable_of_interest2()
+      #pca <- uncorrected_PCA_react()
+      #batch_choice <- input$batch_choices_PCA
+      hover_choice <- input$SVAhover
+      svaColor <- input$SVAcolor
+      metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice,svaColor))
+      metaCols <- metaCols[which(metaCols %in% colnames(meta))]
+      SVA_x <- input$SVAxAxis1
+      SVA_y <- input$SVAyAxis1
+      uncorrected_SVA_points <- as.data.frame(df[,c(SVA_x,SVA_y)])
+      uncorrected_SVA_plot_df <- merge(df,meta[,metaCols,drop = F],by.x = 0, by.y = colnames(meta)[1])
+      colnames(uncorrected_SVA_plot_df)[1] <- colnames(uncorrected_SVA_plot_df)[1]
+      #PCX <- gsub("^PC","",PC_x)
+      #PCY <- gsub("^PC","",PC_y)
+      #uncorrected_PCA_plot_df[,PC_x] <- as.numeric(uncorrected_PCA_plot_df[,PC_x]) / (pca$sdev[as.numeric(PCX)] * sqrt(nrow(uncorrected_PCA_plot_df)))
+      #uncorrected_PCA_plot_df[,PC_y] <- as.numeric(uncorrected_PCA_plot_df[,PC_y]) / (pca$sdev[as.numeric(PCY)] * sqrt(nrow(uncorrected_PCA_plot_df)))
+      uncorrected_SVA_plot_df$text <- NA
+      for (r in seq(nrow(uncorrected_SVA_plot_df))) {
+        text_vec <- c()
+        for (c in metaCols) {
+          text_vec <- c(text_vec,
+                        paste0("\\<br\\>\\<b\\>", c, ":\\</b\\> ",uncorrected_SVA_plot_df[r,c]))
+        }
+        text = paste(text_vec,collapse = '')
+        text = gsub("\\\\", '', text)
+        text = paste0(text,"<extra></extra>") #removes outside of box text
+        uncorrected_SVA_plot_df$text[r] = text
+      }
+      uncorrected_SVA_plot_df
     }
+    
+    
+  })
+  
+  uncorrected_SVA_scatter_react <- reactive({
+    
+    req(uncorrected_SVA_scatter_df)
+    plot_df <- uncorrected_SVA_scatter_df()
+    
+    meta <- aligned_meta_file()
+    #plot_df <- uncorrected_PCA_plot_df()
+    batch_choice <- uncorrected_SVA_variable_of_interest2()
+    hover_choice <- input$SVAhover
+    svaColor <- input$SVAcolor
+    metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
+    SVA_x <- input$SVAxAxis1
+    SVA_y <- input$SVAyAxis1
+    colnames(plot_df)[which(colnames(plot_df) == SVA_x)] <- "X"
+    colnames(plot_df)[which(colnames(plot_df) == SVA_y)] <- "Y"
+    dotSize <- input$SVAdotSize
+    fontSize <- input$SVAfontSize
+    
+    if (isTruthy(batch_choice) & isTruthy(svaColor)) {
+      #print(svaColor)
+      #if (batch_choice != "Select") {
+        colnames(plot_df)[which(colnames(plot_df) == svaColor)] <- "ColorBatch"
+        p4 <- plot_ly() %>%
+          add_trace(
+            data = plot_df,
+            x = ~X,
+            y = ~Y,
+            type = "scatter",
+            mode = "markers",
+            color = ~ColorBatch,
+            legendgroup=svaColor,
+            marker=list(size=dotSize,symbol = 'circle'),
+            hovertemplate = ~text
+          ) %>%
+          layout(xaxis = list(zeroline = FALSE,title = SVA_x),
+                 yaxis = list(zeroline = FALSE,title = SVA_y),
+                 font = list(size = fontSize)) %>%
+          config(
+            toImageButtonOptions = list(
+              format = "svg"
+            )
+          )
+        p4
+      #} else {
+      #  p4 <- plot_ly() %>%
+      #    add_trace(
+      #      data = plot_df,
+      #      x = ~X,
+      #      y = ~Y,
+      #      type = "scatter",
+      #      mode = "markers",
+      #      marker = list(color = "black"),
+      #      marker=list(size=dotSize,symbol = 'circle'),
+      #      hovertemplate = ~text
+      #    ) %>%
+      #    layout(xaxis = list(zeroline = FALSE,title = SVA_x),
+      #           yaxis = list(zeroline = FALSE,title = SVA_y),
+      #           font = list(size = fontSize)) %>%
+      #    config(
+      #      toImageButtonOptions = list(
+      #        format = "svg"
+      #      )
+      #    )
+      #  p4
+      #}
+    }
+    
+  })
+  
+  output$uncorrected_SVA_scatter <- renderPlotly({
+    
+    req(uncorrected_SVA_scatter_react())
+    p <- uncorrected_SVA_scatter_react()
+    p
+    
+  })
+  output$uncorrected_SVA_scatter_df <- DT::renderDataTable({
+    
+    req(uncorrected_SVA_scatter_df())
+    df <- uncorrected_SVA_scatter_df()
+    df <- df[,-ncol(df)]
+    colnames(df)[1] <- "SampleName"
+    DT::datatable(df,
+                  options = list(lengthMenu = c(5,10, 20, 100, 1000),
+                                 pageLength = 10,
+                                 scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = grep("^SVA_",colnames(df),value = T), digits = 4)
+    
   })
   
   ## Matrix 2 -----------------------------------------------------------------
@@ -7361,7 +8090,7 @@ server <- function(input, output, session) {
       }
     }
   })
-  corrected_SVA_nsv <- reactive({
+  corrected_SVA_nsv <- eventReactive(input$CalcSurVar, {
     if (isTruthy(corrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
       req(matrix2())
       svaMethod <- input$svaMethod
@@ -7370,22 +8099,45 @@ server <- function(input, output, session) {
       meta <- aligned_meta_file()
       colnames(meta)[which(colnames(meta) == Feature)] <- "Feature"
       #withProgress(message = paste("Processing",matrix2Title_react()), value = 0, {
-        #incProgress(0.5, detail = "Number of surrogate variables")
-        corrected_mod <- model.matrix(reformulate("Feature"), data = meta)
-        corrected_mod_null <- model.matrix(~1, data = meta)
-        corrected_SVA_nsv <- sva::num.sv(matrix2(), corrected_mod, method = svaMethod, vfilter = svaVarNum)
-        #incProgress(0.5, detail = "Complete!")
+      #incProgress(0.5, detail = "Number of surrogate variables")
+      corrected_mod <- model.matrix(reformulate("Feature"), data = meta)
+      corrected_mod_null <- model.matrix(~1, data = meta)
+      corrected_SVA_nsv <- sva::num.sv(matrix2(), corrected_mod, method = svaMethod, vfilter = svaVarNum)
+      #incProgress(0.5, detail = "Complete!")
       #})
       corrected_SVA_nsv
     }
   })
+  #corrected_SVA_nsv <- reactive({
+  #  if (isTruthy(corrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
+  #    req(matrix2())
+  #    svaMethod <- input$svaMethod
+  #    svaVarNum <- input$SVAvarNum
+  #    Feature <- corrected_SVA_variable_of_interest2()
+  #    meta <- aligned_meta_file()
+  #    colnames(meta)[which(colnames(meta) == Feature)] <- "Feature"
+  #    #withProgress(message = paste("Processing",matrix2Title_react()), value = 0, {
+  #      #incProgress(0.5, detail = "Number of surrogate variables")
+  #      corrected_mod <- model.matrix(reformulate("Feature"), data = meta)
+  #      corrected_mod_null <- model.matrix(~1, data = meta)
+  #      corrected_SVA_nsv <- sva::num.sv(matrix2(), corrected_mod, method = svaMethod, vfilter = svaVarNum)
+  #      #incProgress(0.5, detail = "Complete!")
+  #    #})
+  #    corrected_SVA_nsv
+  #  }
+  #})
+  #observe({
+  #  n.sv <- corrected_SVA_nsv()
+  #  updateNumericInput(session,"NSV2", value = n.sv)
+  #})
   observe({
-    n.sv <- corrected_SVA_nsv()
-    updateNumericInput(session,"NSV2", value = n.sv)
+    n.sv <- input$NSV2
+    updateSelectInput(session,"SVAxAxis2", choices = sapply(seq(n.sv),function(x) paste0("SVA_",x)), selected = "SVA_1")
+    updateSelectInput(session,"SVAyAxis2", choices = sapply(seq(n.sv),function(x) paste0("SVA_",x)), selected = "SVA_2")
   })
   observe({
     if (isTruthy(corrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
-      req(corrected_SVA_nsv())
+      #req(corrected_SVA_nsv())
       req(input$NSV2)
       req(matrix2())
       svaMethod <- input$svaMethod
@@ -7417,7 +8169,7 @@ server <- function(input, output, session) {
   })
   corrected_SVA_object <- reactive({
     if (isTruthy(uncorrected_SVA_variable_of_interest2()) & isTruthy(aligned_meta_file())) {
-      req(corrected_SVA_nsv())
+      #req(corrected_SVA_nsv())
       req(input$NSV2)
       req(SVA2_pass())
       if (SVA2_pass() == 3) {
@@ -7435,15 +8187,23 @@ server <- function(input, output, session) {
                                            numSVmethod = svaMethod, vfilter = svaVarNum)
           incProgress(0.5, detail = "Complete!")
         })
-        df <- as.data.frame(corrected_SVA_object$sv)
-        if (ncol(df) > 0) {
-          colnames(df) <- paste0("SVA_",matrix2Title_react(),"_Surrogate_Vars_",seq(ncol(df)))
-          #colnames(df) <- paste0("SVA_",input$batch_correction_method,"_Corrected_Surrogate_Vars_",seq(ncol(df)))
-          df <- cbind(aligned_meta_file(),df)
-          corr_boxplot_meta_file(df)
+        #df <- as.data.frame(corrected_SVA_object$sv)
+        #if (ncol(df) > 0) {
+        #  colnames(df) <- paste0("SVA_",matrix2DlndTitle_react(),"_Surrogate_Vars_",seq(ncol(df)))
+        #  #colnames(df) <- paste0("SVA_",input$batch_correction_method,"_Corrected_Surrogate_Vars_",seq(ncol(df)))
+        #  df <- cbind(aligned_meta_file(),df)
+        #  corr_boxplot_meta_file(df)
           corrected_SVA_object
-        }
+        #}
       }
+    }
+  })
+  observe({
+    df <- as.data.frame(corrected_SVA_object()$sv)
+    if (ncol(df) > 0) {
+      colnames(df) <- paste0("SVA_",matrix2DlndTitle_react(),"_SV_",seq(ncol(df)))
+      df <- cbind(aligned_meta_file(),df)
+      corr_boxplot_meta_file(df)
     }
   })
   corrected_SVA_probability_df <- reactive({
@@ -7473,9 +8233,141 @@ server <- function(input, output, session) {
   
   output$corrected_SVA_nsv_print <- renderPrint({
     if (isTruthy(corrected_SVA_nsv())) {
-      #print(paste("The Number of Estimated Surrogate Variables are:", corrected_SVA_nsv()))
-      print(paste("The Number of Estimated Surrogate Variables are:", input$NSV2))
+      print(paste("Estimated Surrogate Variables in Matrix 2:", corrected_SVA_nsv()))
+      #print(paste("The Number of Estimated Surrogate Variables are:", input$NSV2))
     }
+  })
+  
+  corrected_SVA_scatter_df <- reactive({
+    
+    req(corrected_SVA_object())
+    df <- corrected_SVA_object()$sv
+    if (input$SVAxAxis2 != input$SVAyAxis2) {
+      colnames(df) <- sapply(seq(ncol(df)),function(x) paste0("SVA_",x))
+      rownames(df) <- colnames(matrix2())
+      meta <- aligned_meta_file()
+      batch_choice <- uncorrected_SVA_variable_of_interest2()
+      #pca <- uncorrected_PCA_react()
+      #batch_choice <- input$batch_choices_PCA
+      hover_choice <- input$SVAhover
+      svaColor <- input$SVAcolor
+      metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice,svaColor))
+      metaCols <- metaCols[which(metaCols %in% colnames(meta))]
+      SVA_x <- input$SVAxAxis2
+      SVA_y <- input$SVAyAxis2
+      corrected_SVA_points <- as.data.frame(df[,c(SVA_x,SVA_y)])
+      corrected_SVA_plot_df <- merge(df,meta[,metaCols,drop = F],by.x = 0, by.y = colnames(meta)[1])
+      colnames(corrected_SVA_plot_df)[1] <- colnames(corrected_SVA_plot_df)[1]
+      #PCX <- gsub("^PC","",PC_x)
+      #PCY <- gsub("^PC","",PC_y)
+      #uncorrected_PCA_plot_df[,PC_x] <- as.numeric(uncorrected_PCA_plot_df[,PC_x]) / (pca$sdev[as.numeric(PCX)] * sqrt(nrow(uncorrected_PCA_plot_df)))
+      #uncorrected_PCA_plot_df[,PC_y] <- as.numeric(uncorrected_PCA_plot_df[,PC_y]) / (pca$sdev[as.numeric(PCY)] * sqrt(nrow(uncorrected_PCA_plot_df)))
+      corrected_SVA_plot_df$text <- NA
+      for (r in seq(nrow(corrected_SVA_plot_df))) {
+        text_vec <- c()
+        for (c in metaCols) {
+          text_vec <- c(text_vec,
+                        paste0("\\<br\\>\\<b\\>", c, ":\\</b\\> ",corrected_SVA_plot_df[r,c]))
+        }
+        text = paste(text_vec,collapse = '')
+        text = gsub("\\\\", '', text)
+        text = paste0(text,"<extra></extra>") #removes outside of box text
+        corrected_SVA_plot_df$text[r] = text
+      }
+      corrected_SVA_plot_df
+    }
+    
+    
+  })
+  
+  corrected_SVA_scatter_react <- reactive({
+    
+    req(corrected_SVA_scatter_df)
+    plot_df <- corrected_SVA_scatter_df()
+    
+    meta <- aligned_meta_file()
+    #plot_df <- uncorrected_PCA_plot_df()
+    batch_choice <- uncorrected_SVA_variable_of_interest2()
+    hover_choice <- input$SVAhover
+    metaCols <- unique(c(colnames(meta)[1],batch_choice,hover_choice))
+    SVA_x <- input$SVAxAxis2
+    SVA_y <- input$SVAyAxis2
+    svaColor <- input$SVAcolor
+    colnames(plot_df)[which(colnames(plot_df) == SVA_x)] <- "X"
+    colnames(plot_df)[which(colnames(plot_df) == SVA_y)] <- "Y"
+    dotSize <- input$SVAdotSize
+    fontSize <- input$SVAfontSize
+    
+    if (isTruthy(batch_choice) & isTruthy(svaColor)) {
+      #if (batch_choice != "Select") {
+        colnames(plot_df)[which(colnames(plot_df) == svaColor)] <- "ColorBatch"
+        p4 <- plot_ly() %>%
+          add_trace(
+            data = plot_df,
+            x = ~X,
+            y = ~Y,
+            type = "scatter",
+            mode = "markers",
+            color = ~ColorBatch,
+            legendgroup=svaColor,
+            marker=list(size=dotSize,symbol = 'circle'),
+            hovertemplate = ~text
+          ) %>%
+          layout(xaxis = list(zeroline = FALSE,title = SVA_x),
+                 yaxis = list(zeroline = FALSE,title = SVA_y),
+                 font = list(size = fontSize)) %>%
+          config(
+            toImageButtonOptions = list(
+              format = "svg"
+            )
+          )
+        p4
+      #} else {
+      #  p4 <- plot_ly() %>%
+      #    add_trace(
+      #      data = plot_df,
+      #      x = ~X,
+      #      y = ~Y,
+      #      type = "scatter",
+      #      mode = "markers",
+      #      marker = list(color = "black"),
+      #      marker=list(size=dotSize,symbol = 'circle'),
+      #      hovertemplate = ~text
+      #    ) %>%
+      #    layout(xaxis = list(zeroline = FALSE,title = SVA_x),
+      #           yaxis = list(zeroline = FALSE,title = SVA_y),
+      #           font = list(size = fontSize)) %>%
+      #    config(
+      #      toImageButtonOptions = list(
+      #        format = "svg"
+      #      )
+      #    )
+      #  p4
+      #}
+    }
+    
+  })
+  
+  output$corrected_SVA_scatter <- renderPlotly({
+    
+    req(corrected_SVA_scatter_react())
+    p <- corrected_SVA_scatter_react()
+    p
+    
+  })
+  output$corrected_SVA_scatter_df <- DT::renderDataTable({
+    
+    req(corrected_SVA_scatter_df())
+    df <- corrected_SVA_scatter_df()
+    df <- df[,-ncol(df)]
+    colnames(df)[1] <- "SampleName"
+    DT::datatable(df,
+                  options = list(lengthMenu = c(5,10, 20, 100, 1000),
+                                 pageLength = 10,
+                                 scrollX = T),
+                  rownames = F) %>%
+      formatRound(columns = grep("^SVA_",colnames(df),value = T), digits = 4)
+    
   })
   
   # Box Plot ------------------------------------------------------------------
@@ -8246,7 +9138,7 @@ server <- function(input, output, session) {
   #observe({
   ##shiny::observeEvent(input$save_uncorrected_matrix, {
   #  #withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix1Title_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix1Title_react()),"_matrix", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
   #    df <- as.data.frame(matrix1())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
@@ -8259,7 +9151,7 @@ server <- function(input, output, session) {
   #})
   #shiny::observeEvent(input$save_uncorrected_matrixZip, {
   #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix1Title_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix1Title_react()),"_matrix", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
   #    df <- as.data.frame(matrix1())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
@@ -8272,7 +9164,7 @@ server <- function(input, output, session) {
   #})
   output$dnldsave_uncorrected_matrix <- downloadHandler(
     filename = function() {
-      paste0(matrix1DlndTitle_react(),"_Matrix","_",Sys.Date(),".tsv")
+      paste0(matrix1DlndTitle_react(),"_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- as.data.frame(matrix1())
@@ -8283,7 +9175,7 @@ server <- function(input, output, session) {
   )
   output$dnldsave_uncorrected_matrixRaw <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_Input_RNASeqCounts_Matrix","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_Input_RNASeqCounts_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- as.data.frame(matrix1())
@@ -8294,7 +9186,7 @@ server <- function(input, output, session) {
   )
   #output$dnldsave_uncorrected_matrixZip <- downloadHandler(
   #  filename = function() {
-  #    paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Matrix","_",Sys.Date(),".tsv")
+  #    paste0("BatchFlex_",gsub(" ","",matrix1Title_react()),"_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
   #  },
   #  content = function(file) {
   #    df <- as.data.frame(matrix1())
@@ -8305,7 +9197,7 @@ server <- function(input, output, session) {
   #)
   shiny::observeEvent(input$save_uncorrected_PCA_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_plot",input$save_uncorrected_PCA_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_plot",input$save_uncorrected_PCA_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_PCA_plot_forDlnd_react(),
                       height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
       #print(paste(matrix1DlndTitle_react(),"PCA_plot Ready for Zip"))
@@ -8314,7 +9206,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_PCA_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_PCA_plot_forDlnd_react()
@@ -8323,7 +9215,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_PCA_mc_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_mc_plot",input$save_uncorrected_PCA_mc_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PCA_mc_plot",input$save_uncorrected_PCA_mc_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_PCA_multiple_components(),
                       height = input$pca_mcHeight, width = input$pca_mcWidth, units = input$pca_mcUnits)
       #print(paste(matrix1DlndTitle_react(),"PCA_mc_plot Ready for Zip"))
@@ -8332,7 +9224,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_PCA_mc_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA_MultipleComponents","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PCA_MultipleComponents","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_PCA_multiple_components()
@@ -8341,7 +9233,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_scree_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Scree_plot",input$save_uncorrected_scree_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Scree_plot",input$save_uncorrected_scree_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_scree_plot_react(),
                       height = input$pca_dtHeight, width = input$pca_dtWidth, units = input$pca_dtUnits)
       #print(paste(matrix1DlndTitle_react(),"Scree_plot Ready for Zip"))
@@ -8350,7 +9242,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_scree_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Scree_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Scree_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_scree_plot_react()
@@ -8359,7 +9251,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_PCA_components, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PC_components",input$save_uncorrected_PCA_components, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PC_components",input$save_uncorrected_PCA_components, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(as.data.frame(uncorrected_PCA_details2()$x), file.path(temp_directory, file_name))
       #print(paste(matrix1DlndTitle_react(),"PCA_details Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8367,7 +9259,7 @@ server <- function(input, output, session) {
   })
   output$dnld <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PC_Components","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PC_Components","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- save_uncorrected_PCA_components()
@@ -8376,7 +9268,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_contribution_table, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_table",input$save_uncorrected_contribution_table, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_table",input$save_uncorrected_contribution_table, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorrected_PCA_individuals(), file.path(temp_directory, file_name))
       #print(paste(matrix1DlndTitle_react(),"contribution_table Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8384,7 +9276,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_contribution_table <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Table","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- uncorrected_PCA_individuals()
@@ -8393,7 +9285,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_contribution_counts, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_counts",input$save_uncorrected_contribution_counts, "_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_contribution_counts",input$save_uncorrected_contribution_counts, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorrected_contribution_counts(), file.path(temp_directory, file_name))
       #print(paste(matrix1DlndTitle_react(),"contribution_counts Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8401,7 +9293,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_contribution_counts <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Contribution_Counts","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- uncorrected_contribution_counts()
@@ -8410,7 +9302,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_UMAP, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_UMAP",input$save_uncorrected_UMAP, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_UMAP",input$save_uncorrected_UMAP, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_UMAP_react(),
                       height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
       #print(paste(matrix1DlndTitle_react(),"UMAP Ready for Zip"))
@@ -8419,7 +9311,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_UMAP <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_UMAP","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_UMAP","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_UMAP_react()
@@ -8428,7 +9320,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_elbow_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_elbow_plot",input$save_uncorrected_elbow_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_elbow_plot",input$save_uncorrected_elbow_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_elbow_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix1DlndTitle_react(),"elbow_plot Ready for Zip"))
@@ -8437,7 +9329,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_elbow_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Elbow_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_elbow_analysis()
@@ -8446,7 +9338,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_silhouette_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_silhouette_plot",input$save_uncorrected_silhouette_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_silhouette_plot",input$save_uncorrected_silhouette_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_silhouette_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix1DlndTitle_react(),"silhouette_plot Ready for Zip"))
@@ -8455,7 +9347,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_silhouette_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Silhouette_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_silhouette_analysis()
@@ -8464,7 +9356,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_dunn_index_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_dunn_index_plot",input$save_uncorrected_dunn_index_plot, "_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_dunn_index_plot",input$save_uncorrected_dunn_index_plot, "_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_dunn_index_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix1DlndTitle_react(),"dunn_index_plot Ready for Zip"))
@@ -8473,7 +9365,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_dunn_index_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Dunn_Index_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_dunn_index_analysis()
@@ -8482,7 +9374,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_heatmap, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(temp_directory, "/", gsub(" ","",matrix1DlndTitle_react()),"_heatmap",input$save_uncorrected_heatmap,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(temp_directory, "/", gsub(" ","",matrix1DlndTitle_react()),"_heatmap",input$save_uncorrected_heatmap,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       svg(filename = file_name, height = input$heatmapHeight, width = input$heatmapWidth)
       ComplexHeatmap::draw(uncorrected_heatmap())
       dev.off()
@@ -8493,7 +9385,7 @@ server <- function(input, output, session) {
   
   output$dnldsave_uncorrected_heatmap <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Heatmap","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Heatmap","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       svg(filename = file, height = input$heatmapHeight, width = input$heatmapWidth)
@@ -8503,7 +9395,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_ClusterInfoTab, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste("Meta_Cluster_Info","_",Sys.Date(),input$save_ClusterInfoTab,".tsv", sep = "")
+      file_name <- paste("Meta_Cluster_Info","_",format(Sys.time(),format = "%Y%m%d_%H%M"),input$save_ClusterInfoTab,".tsv", sep = "")
       readr::write_tsv(boxplot_meta_file(), file.path(temp_directory, file_name))
       #print("Cluster_Info Ready for Zip")
       incProgress(1, detail = "Complete!")
@@ -8511,7 +9403,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_ClusterInfoTab <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_","Meta_Cluster_Info","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_","Meta_Cluster_Info","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- boxplot_meta_file()
@@ -8521,7 +9413,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_uncorrected_barplot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot",input$save_uncorrected_barplot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot",input$save_uncorrected_barplot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = uncorr_bar_plot_react(),
              height = input$barPHeight, width = input$barPWidth, units = input$barPUnits)
       #print(paste(matrix1DlndTitle_react(),"Bar_plot Ready for Zip"))
@@ -8530,7 +9422,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_barplot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Bar_plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorr_bar_plot_react()
@@ -8540,7 +9432,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorr_avg_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_",input$save_uncorr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_",input$save_uncorr_avg_het_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorr_avg_het_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix1DlndTitle_react()," Average_Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8548,7 +9440,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorr_avg_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Heterogeneity_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_avg_het_react()
@@ -8557,7 +9449,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorr_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_",input$save_uncorr_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_",input$save_uncorr_het_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorr_het_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix1DlndTitle_react()," Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8565,7 +9457,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorr_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Heterogeneity_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_het_react()
@@ -8575,7 +9467,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorr_avg_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_",input$save_uncorr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_",input$save_uncorr_avg_evn_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorr_avg_evn_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix1DlndTitle_react()," Average_Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8583,7 +9475,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorr_avg_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Average_Eveness_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_avg_evn_react()
@@ -8592,7 +9484,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorr_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_",input$save_uncorr_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_",input$save_uncorr_evn_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(uncorr_evn_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix1DlndTitle_react()," Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8600,7 +9492,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorr_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix1DlndTitle_react()),"_Eveness_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- uncorr_evn_react()
@@ -8610,7 +9502,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_uncorrected_RLE_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_RLE_plot",input$save_uncorrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_RLE_plot",input$save_uncorrected_RLE_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_RLE(),
                       height = input$rleHeight, width = input$rleWidth, units = input$rleUnits)
       #print(paste(matrix1DlndTitle_react(),"RLE_plot Ready for Zip"))
@@ -8619,7 +9511,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_RLE_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_RLE_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_RLE_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_RLE()
@@ -8628,7 +9520,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_EV_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_EV_plot",input$save_uncorrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_EV_plot",input$save_uncorrected_EV_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = uncorrected_EV(),
                       height = input$exp_varHeight, width = input$exp_varWidth, units = input$exp_varUnits)
       #print(paste(matrix1DlndTitle_react(),"EV_plot Ready for Zip"))
@@ -8637,7 +9529,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_EV_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_EV_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_EV_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- uncorrected_EV()
@@ -8646,7 +9538,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_pvca_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot",input$save_uncorrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot",input$save_uncorrected_pvca_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = pvca_uncorr_react(),
                       height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
       #print(paste(matrix1DlndTitle_react(),"PVCA_Plot Ready for Zip"))
@@ -8655,17 +9547,35 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_pvca_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_PVCA_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- pvca_uncorr_react()
       ggplot2::ggsave(file,p, height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
     }
   )
+  #observeEvent(input$save_uncorrected_SVA_probability_density, {
+  #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
+  #    file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_SVA_probability_density",input$save_uncorrected_SVA_probability_density,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+  #    ggsave(filename = file_name, path = temp_directory, plot = uncorrected_SVA_probability_ggplot(),
+  #           height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+  #    #print(paste(matrix1DlndTitle_react(),"SVA_probability_density Ready for Zip"))
+  #    incProgress(1, detail = "Complete!")
+  #  })
+  #})
+  #output$dnldsave_uncorrected_SVA_probability_density <- downloadHandler(
+  #  filename = function() {
+  #    paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_SVA_Probability_Density","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
+  #  },
+  #  content = function(file) {
+  #    p <- uncorrected_SVA_probability_ggplot()
+  #    ggplot2::ggsave(file,p, height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+  #  }
+  #)
   observeEvent(input$save_uncorrected_SVA_probability_density, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_SVA_probability_density",input$save_uncorrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
-      ggsave(filename = file_name, path = temp_directory, plot = uncorrected_SVA_probability_ggplot(),
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_SVA_ScatterPlot",input$save_uncorrected_SVA_probability_density,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+      ggsave(filename = file_name, path = temp_directory, plot = uncorrected_SVA_scatter_react(),
              height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
       #print(paste(matrix1DlndTitle_react(),"SVA_probability_density Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8673,16 +9583,38 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_SVA_probability_density <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_SVA_ScatterPlot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
-      p <- uncorrected_SVA_probability_ggplot()
+      p <- uncorrected_SVA_scatter_react()
       ggplot2::ggsave(file,p, height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+    }
+  )
+  observeEvent(input$save_uncorrected_SVA_scatter_df, {
+    withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_SurrogateVars_",input$save_uncorrected_SVA_scatter_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+      df <- uncorrected_SVA_scatter_df()
+      df <- df[,-ncol(df)]
+      colnames(df)[1] <- "SampleName"
+      write.table(df,file.path(temp_directory, file_name), sep = '\t', row.names = F)
+      #print(paste(matrix1DlndTitle_react(),"SVA_probability_density Ready for Zip"))
+      incProgress(1, detail = "Complete!")
+    })
+  })
+  output$dnldsave_uncorrected_SVA_scatter_df <- downloadHandler(
+    filename = function() {
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_SurrogateVars_","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".txt")
+    },
+    content = function(file) {
+      df <- uncorrected_SVA_scatter_df()
+      df <- df[,-ncol(df)]
+      colnames(df)[1] <- "SampleName"
+      write.table(df,file, sep = '\t', row.names = F)
     }
   )
   observeEvent(input$save_SVA_surrogate_variables, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste("Meta_withSV_",input$save_SVA_surrogate_variables,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste("Meta_withSV_",input$save_SVA_surrogate_variables,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(boxplot_meta_file(), file.path(temp_directory, file_name))
       #print("surrogate_variables Ready for Zip")
       incProgress(1, detail = "Complete!")
@@ -8690,7 +9622,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_SVA_surrogate_variables <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_","Meta_withSV","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_","Meta_withSV","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- boxplot_meta_file()
@@ -8699,7 +9631,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_uncorrected_Box_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Box_plot",input$save_uncorrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_Box_plot",input$save_uncorrected_Box_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = CohortBPPlot_react(),
              height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
       #print(paste(matrix1DlndTitle_react(),"Box_plot Ready for Zip"))
@@ -8708,7 +9640,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_Box_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Box_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_Box_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- CohortBPPlot_react()
@@ -8717,7 +9649,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_uncorrected_Box_plot_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data",input$save_uncorrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data",input$save_uncorrected_Box_plot_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(CohortBPPlot_df_react(), file.path(temp_directory, file_name))
       #print(paste(matrix1DlndTitle_react(),"BoxPlot_data Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8725,7 +9657,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_uncorrected_Box_plot_df <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix1DlndTitle_react()),"_BoxPlot_data","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- CohortBPPlot_df_react()
@@ -8735,7 +9667,7 @@ server <- function(input, output, session) {
   ## Matrix 2 ---------------------------------------------------------------
   #shiny::observeEvent(input$save_corrected_matrix, {
   #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
   #    df <- as.data.frame(matrix2())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
@@ -8746,7 +9678,7 @@ server <- function(input, output, session) {
   #})
   #shiny::observeEvent(input$save_corrected_matrixZip, {
   #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", Sys.Date(),".tsv", sep = "")
+  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_matrix", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
   #    df <- as.data.frame(matrix2())
   #    df <- cbind(data.frame(Genes = rownames(df)),
   #                df)
@@ -8757,7 +9689,7 @@ server <- function(input, output, session) {
   #})
   output$dnldsave_corrected_matrix <- downloadHandler(
     filename = function() {
-      paste0(matrix2DlndTitle_react(),"_Matrix","_",Sys.Date(),".tsv")
+      paste0(matrix2DlndTitle_react(),"_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- as.data.frame(matrix2())
@@ -8768,7 +9700,7 @@ server <- function(input, output, session) {
   )
   output$dnldsave_corrected_matrixRaw <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_RNASeqCounts_",input$batch_correction_method2,"_Corrected_Matrix","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_RNASeqCounts_",input$batch_correction_method2,"_Corrected_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- as.data.frame(matrix2())
@@ -8779,7 +9711,7 @@ server <- function(input, output, session) {
   )
   #output$dnldsave_corrected_matrixZip <- downloadHandler(
   #  filename = function() {
-  #    paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Matrix","_",Sys.Date(),".tsv")
+  #    paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Matrix","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
   #  },
   #  content = function(file) {
   #    df <- as.data.frame(matrix2())
@@ -8790,7 +9722,7 @@ server <- function(input, output, session) {
   #)
   shiny::observeEvent(input$save_corrected_PCA_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_plot",input$save_corrected_PCA_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_plot",input$save_corrected_PCA_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_PCA_plot_forDlnd_react(),
                       height = input$pcaHeight, width = input$pcaWidth, units = input$pcaUnits)
       #print(paste(matrix2DlndTitle_react(),"PCA_plot Ready for Zip"))
@@ -8799,7 +9731,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_PCA_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_PCA_plot_forDlnd_react()
@@ -8808,7 +9740,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_PCA_mc_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_mc_plot",input$save_corrected_PCA_mc_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PCA_mc_plot",input$save_corrected_PCA_mc_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_PCA_multiple_components(),
                       height = input$pca_mcHeight, width = input$pca_mcWidth, units = input$pca_mcUnits)
       #print(paste(matrix2DlndTitle_react(),"PCA_mc_plot Ready for Zip"))
@@ -8817,7 +9749,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_PCA_mc_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Multiple_Components_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PCA_Multiple_Components_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_PCA_multiple_components()
@@ -8826,7 +9758,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_scree_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Scree_plot",input$save_corrected_scree_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Scree_plot",input$save_corrected_scree_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_scree_plot_react(),
                       height = input$pca_dtHeight, width = input$pca_dtWidth, units = input$pca_dtUnits)
       #print(paste(matrix2DlndTitle_react(),"Scree_plot Ready for Zip"))
@@ -8835,7 +9767,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_scree_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Scree_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Scree_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_scree_plot_react()
@@ -8844,7 +9776,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_PCA_components, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PC_components",input$save_corrected_PCA_components,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PC_components",input$save_corrected_PCA_components,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(as.data.frame(corrected_PCA_details2()$x), file.path(temp_directory, file_name))
       #print(paste(matrix2DlndTitle_react(),"PCA_details Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8852,7 +9784,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_PCA_components <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PC_Components","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PC_Components","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- corrected_PCA_details2()
@@ -8861,7 +9793,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_contribution_table, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_table",input$save_corrected_contribution_table,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_table",input$save_corrected_contribution_table,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corrected_PCA_individuals(), file.path(temp_directory, file_name))
       #print(paste(matrix2DlndTitle_react(),"contribution_table Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8869,7 +9801,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_contribution_table <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Table","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Table","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- corrected_PCA_individuals()
@@ -8878,7 +9810,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_contribution_counts, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_counts",input$save_corrected_contribution_counts,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_contribution_counts",input$save_corrected_contribution_counts,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corrected_contribution_counts(), file.path(temp_directory, file_name))
       #print(paste(matrix2DlndTitle_react(),"contribution_counts Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -8886,7 +9818,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_contribution_counts <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Counts","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Contribution_Counts","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- corrected_contribution_counts()
@@ -8895,7 +9827,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_UMAP, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_UMAP",input$save_corrected_UMAP,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_UMAP",input$save_corrected_UMAP,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_UMAP_react(),
                       height = input$umapHeight, width = input$umapWidth, units = input$umapUnits)
       #print(paste(matrix2DlndTitle_react(),"UMAP Ready for Zip"))
@@ -8904,7 +9836,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_UMAP <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_UMAP","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_UMAP","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_UMAP_react()
@@ -8913,7 +9845,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_elbow_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_elbow_plot",input$save_corrected_elbow_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_elbow_plot",input$save_corrected_elbow_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_elbow_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix2DlndTitle_react(),"elbow_plot Ready for Zip"))
@@ -8922,7 +9854,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_elbow_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Elbow_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Elbow_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_elbow_analysis()
@@ -8931,7 +9863,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_silhouette_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_silhouette_plot",input$save_corrected_silhouette_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_silhouette_plot",input$save_corrected_silhouette_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_silhouette_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix2DlndTitle_react(),"silhouette_plot Ready for Zip"))
@@ -8940,7 +9872,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_silhouette_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Silhouette_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Silhouette_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_silhouette_analysis()
@@ -8949,7 +9881,7 @@ server <- function(input, output, session) {
   )
   observeEvent(input$save_corrected_dunn_index_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_dunn_index_plot",input$save_corrected_dunn_index_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_dunn_index_plot",input$save_corrected_dunn_index_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_dunn_index_analysis(),
                       height = input$cluster_mainHeight, width = input$cluster_mainWidth, units = input$cluster_mainUnits)
       #print(paste(matrix2DlndTitle_react(),"dunn_index_plot Ready for Zip"))
@@ -8958,7 +9890,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_dunn_index_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Dunn_Index_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Dunn_Index_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_dunn_index_analysis()
@@ -8967,7 +9899,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_heatmap, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(temp_directory,"/",gsub(" ","",matrix2DlndTitle_react()),"_heatmap",input$save_corrected_heatmap,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(temp_directory,"/",gsub(" ","",matrix2DlndTitle_react()),"_heatmap",input$save_corrected_heatmap,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       svg(filename = file_name, height = input$heatmapHeight, width = input$heatmapWidth)
       ComplexHeatmap::draw(corrected_heatmap())
       dev.off()
@@ -8977,7 +9909,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_heatmap <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Heatmap","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Heatmap","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       svg(filename = file, height = input$heatmapHeight, width = input$heatmapWidth)
@@ -8988,7 +9920,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$save_corrected_barplot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot",input$save_corrected_barplot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot",input$save_corrected_barplot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggsave(filename = file_name, path = temp_directory, plot = corr_bar_plot_react(),
              height = input$barPHeight, width = input$barPWidth, units = input$barPUnits)
       #print(paste(matrix2DlndTitle_react(),"Bar_plot Ready for Zip"))
@@ -8997,7 +9929,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_barplot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Bar_plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corr_bar_plot_react()
@@ -9007,7 +9939,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corr_avg_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_",input$save_corr_avg_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_",input$save_corr_avg_het_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corr_avg_het_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix2DlndTitle_react()," Average_Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9015,7 +9947,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corr_avg_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Heterogeneity_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_avg_het_react()
@@ -9024,7 +9956,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corr_het_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_",input$save_corr_het_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_",input$save_corr_het_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corr_het_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix2DlndTitle_react()," Heterogeneity Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9032,7 +9964,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corr_het_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Heterogeneity_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_het_react()
@@ -9042,7 +9974,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corr_avg_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_",input$save_corr_avg_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_",input$save_corr_avg_evn_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corr_avg_evn_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix2DlndTitle_react()," Average_Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9050,7 +9982,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corr_avg_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Average_Eveness_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_avg_evn_react()
@@ -9059,7 +9991,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corr_evn_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_",input$save_corr_evn_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_",input$save_corr_evn_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(corr_evn_react(), file.path(temp_directory, file_name))
       #print(paste0(matrix2DlndTitle_react()," Eveness Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9067,7 +9999,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corr_evn_df <- downloadHandler(
     filename = function() {
-      paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_", Sys.Date(),".tsv", sep = "")
+      paste(gsub(" ","",matrix2DlndTitle_react()),"_Eveness_", format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
     },
     content = function(file) {
       df <- corr_evn_react()
@@ -9077,7 +10009,7 @@ server <- function(input, output, session) {
   
   shiny::observeEvent(input$save_corrected_RLE_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_RLE_plot",input$save_corrected_RLE_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_RLE_plot",input$save_corrected_RLE_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_RLE(),
                       height = input$rleHeight, width = input$rleWidth, units = input$rleUnits)
       #print(paste(matrix2DlndTitle_react(),"RLE_plot Ready for Zip"))
@@ -9086,7 +10018,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_RLE_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_RLE_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_RLE_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_RLE()
@@ -9095,7 +10027,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_EV_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_EV_plot",input$save_corrected_EV_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_EV_plot",input$save_corrected_EV_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_EV(),
                       height = input$exp_varHeight, width = input$exp_varWidth, units = input$exp_varUnits)
       #print(paste(matrix2DlndTitle_react(),"EV_plot Ready for Zip"))
@@ -9104,7 +10036,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_EV_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_EV_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_EV_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- corrected_EV()
@@ -9113,7 +10045,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_pvca_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot",input$save_corrected_pvca_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot",input$save_corrected_pvca_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = pvca_corr_react(),
                       height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
       #print(paste(matrix2DlndTitle_react(),"PVCA_Plot Ready for Zip"))
@@ -9122,17 +10054,35 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_pvca_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_PVCA_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- pvca_corr_react()
       ggplot2::ggsave(file,p, height = input$pvcaHeight, width = input$pvcaWidth, units = input$pvcaUnits)
     }
   )
+  #observeEvent(input$save_corrected_SVA_probability_density, {
+  #  withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
+  #    file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_SVA_probability_density",input$save_corrected_SVA_probability_density,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+  #    ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_SVA_probability_ggplot(),
+  #                    height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+  #    #print(paste(matrix2DlndTitle_react(),"SVA_probability_density Ready for Zip"))
+  #    incProgress(1, detail = "Complete!")
+  #  })
+  #})
+  #output$dnldsave_corrected_SVA_probability_density <- downloadHandler(
+  #  filename = function() {
+  #    paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_SVA_Probability_Density","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
+  #  },
+  #  content = function(file) {
+  #    p <- corrected_SVA_probability_ggplot()
+  #    ggplot2::ggsave(file,p, height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+  #  }
+  #)
   observeEvent(input$save_corrected_SVA_probability_density, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_SVA_probability_density",input$save_corrected_SVA_probability_density,"_",Sys.Date(),".svg", sep = "")
-      ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_SVA_probability_ggplot(),
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_SVA_ScatterPlot",input$save_corrected_SVA_probability_density,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+      ggplot2::ggsave(filename = file_name, path = temp_directory, plot = corrected_SVA_scatter_react(),
                       height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
       #print(paste(matrix2DlndTitle_react(),"SVA_probability_density Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9140,16 +10090,38 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_SVA_probability_density <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_SVA_Probability_Density","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_SVA_ScatterPlot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
-      p <- corrected_SVA_probability_ggplot()
+      p <- corrected_SVA_scatter_react()
       ggplot2::ggsave(file,p, height = input$svaHeight, width = input$svaWidth, units = input$svaUnits)
+    }
+  )
+  observeEvent(input$save_corrected_SVA_scatter_df, {
+    withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_SurrogateVars_",input$save_corrected_SVA_scatter_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
+      df <- corrected_SVA_scatter_df()
+      df <- df[,-ncol(df)]
+      colnames(df)[1] <- "SampleName"
+      write.table(df,file.path(temp_directory, file_name), sep = '\t', row.names = F)
+      #print(paste(matrix1DlndTitle_react(),"SVA_probability_density Ready for Zip"))
+      incProgress(1, detail = "Complete!")
+    })
+  })
+  output$dnldsave_corrected_SVA_scatter_df <- downloadHandler(
+    filename = function() {
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_SurrogateVars_","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".txt")
+    },
+    content = function(file) {
+      df <- corrected_SVA_scatter_df()
+      df <- df[,-ncol(df)]
+      colnames(df)[1] <- "SampleName"
+      write.table(df,file, sep = '\t', row.names = F)
     }
   )
   observeEvent(input$save_corrected_Box_plot, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Box_plot",input$save_corrected_Box_plot,"_",Sys.Date(),".svg", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_Box_plot",input$save_corrected_Box_plot,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg", sep = "")
       ggplot2::ggsave(filename = file_name, path = temp_directory, plot = CohortBPPlot_corr_react(),
                       height = input$BPHeight, width = input$BPWidth, units = input$BPUnits)
       #print(paste(matrix2DlndTitle_react(),"Box_plot Ready for Zip"))
@@ -9158,7 +10130,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_Box_plot <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Box_Plot","_",Sys.Date(),".svg")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_Box_Plot","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".svg")
     },
     content = function(file) {
       p <- CohortBPPlot_corr_react()
@@ -9167,7 +10139,7 @@ server <- function(input, output, session) {
   )
   shiny::observeEvent(input$save_corrected_Box_plot_df, {
     withProgress(message = paste("Adding to Step-3 zip file"), value = 0, {
-      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data",input$save_corrected_Box_plot_df,"_",Sys.Date(),".tsv", sep = "")
+      file_name <- paste(gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data",input$save_corrected_Box_plot_df,"_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv", sep = "")
       readr::write_tsv(CohortBPPlot_corr_df_react(), file.path(temp_directory, file_name))
       #print(paste(matrix2DlndTitle_react(),"BoxPlot_data Ready for Zip"))
       incProgress(1, detail = "Complete!")
@@ -9175,7 +10147,7 @@ server <- function(input, output, session) {
   })
   output$dnldsave_corrected_Box_plot_df <- downloadHandler(
     filename = function() {
-      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data","_",Sys.Date(),".tsv")
+      paste0("BatchFlex_",gsub(" ","",matrix2DlndTitle_react()),"_BoxPlot_data","_",format(Sys.time(),format = "%Y%m%d_%H%M"),".tsv")
     },
     content = function(file) {
       df <- CohortBPPlot_corr_df_react()
@@ -9204,7 +10176,12 @@ server <- function(input, output, session) {
   })
   output$download_btn <- downloadHandler(
     filename = function(){
-      paste(input$file_name, "_", Sys.Date(), ".zip", sep = "")
+      paste(input$file_name, "_", format(Sys.time(),format = "%Y%m%d_%H%M"), ".zip", sep = "")
+      #if (input$file_name == "BatchFlex" | !isTruthy(input$file_name)) {
+      #  paste(input$file_name, "_", format(Sys.time(),format = "%Y%m%d_%H%M"), ".zip", sep = "")
+      #} else {
+      #  paste(input$file_name, "_", format(Sys.time(),format = "%Y%m%d"), ".zip", sep = "")
+      #}
     },
     content = function(file){
       zip::zipr(
