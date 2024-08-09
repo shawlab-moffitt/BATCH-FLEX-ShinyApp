@@ -8,7 +8,7 @@ BatchFLEX is the most comprehensive batch correction and evaluation tool and can
 
 BatchFLEX can be accessed through shiny.io at (https://shawlab-moffitt.shinyapps.io/batch_flex/). Additionally, a companion R package can be found at (https://github.com/shawlab-moffitt/BATCHFLEX), which includes source code, example data, and an installation guide.
 
-![BatchFLEX_Figure_1_JD_V8_20240802](https://github.com/user-attachments/assets/fc33a4a4-f2a8-4e68-8b77-37741312edb3)
+![BatchFLEX_Figure_1_JD_V8_20240809](https://github.com/user-attachments/assets/34044761-e757-46f6-bba7-30401bfe8be2)
 
 # Installation
 The BatchFLEX suite can be downloaded (cloned) and installed through the GitHub repository. The downloaded file can be unzipped to a destination folder, which should be set as the working directory or file path. Of note, some of the example files (e.g., gene set files) use relative paths, so the program may fail to identify the file if a working directory is not properly set. The suite was developed in R version 4.1. 
