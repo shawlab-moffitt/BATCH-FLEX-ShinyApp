@@ -1,0 +1,4 @@
+﻿<b>PCA Details</b>
+<p><b>PCA Details</b> can found by first clicking the <b>PCA</b> tab under the <b>"Step 2 - Batch Correction"</b> tab and then clicking the <b>PCA Details</b> tab.</p>
+<p>The first plot under the <b>PCA Details</b> tab is the <b>Scree Plot</b>. The <b> Scree Plot</b> can be used to help the user assess how many principal components are needed to adequately capture the variance of the data. Usually the first two principal components explain a significant proportion of the variance, however, this is not always the case.</p>
+<p>Next, the <b>PCA Details Table</b> is plotted below the <b>Scree Plot</b>. Users can use the <b>PCA Details Table</b> to determine which individual component of any variable is driving each principal component. These parameters can be found under the <b>PCA Detail Parameters</b> section of the sidepanel after selecting the <b>"Step 2 - Batch Correction"</b> tab and the <b>PCA Details</b> tab.</p>

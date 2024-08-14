@@ -1,0 +1,7 @@
+<b>Evaluate Batch</b>
+
+<p>To determine whether a dataset contains a <b>batch/technical</b> effect, users should set up <b>BatchFLEX</b> to compare an <b>uncorrected</b> matrix to a <b>batch corrected</b> matrix.</p>
+
+<p>To do this, users should select <b>uncorrected</b> as method 1 and <b>any correction method</b> as method 2 under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab.</p>
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess whether a batch effect is present in the <b>uncorrected</b> dataset and to determine whether this effect is removed following correction with the selected method.</p>

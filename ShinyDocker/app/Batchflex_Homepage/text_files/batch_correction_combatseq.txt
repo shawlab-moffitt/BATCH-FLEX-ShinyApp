@@ -1,0 +1,23 @@
+<b>ComBatSeq</b>
+
+<p style = "color:tomato"><b><u>ComBatSeq</u></b> can only be applied to <b><u>Raw Count</u></b> data. If raw count data is not provided, ComBatSeq will <b><u>not</u></b> be an option for correction.</p>
+<p style = "color:tomato">BatchFLEX will automatically detect whether the input data is <b><u>log normalized</u></b> or <b><u>raw counts</u></b> based on whether the input data matrix is <b><u>numeric or double</u></b>. Users can override this assumption by clicking the <b><u>"Input is RNAseq Count"</u></b> button on the <b><u>"Step 1 - Data Input" tab.</u></b> </p>
+<p>To correct a matrix using <b>ComBatSeq</b>, users should select <b>ComBatSeq</b> as a method under the sidepanel of <b>"Step 2 - Batch Correction"</b> tab. If <b>Raw Count</b> data is used as an input, <b>BatchFLEX</b> will automatically select ComBatSeq for correction method 2. </p>
+<p><b>ComBatSeq</b> uses negative binomial regression to correct for batch effects in <b>Raw Count</b> data.</p>
+<p>The user can provide a <b>batch variable</b> and a <b>variable of interest</b> for correction. By default, <b>BatchFLEX</b> will use the batch variable selected under the <b>"Select 1 - Data Input"</b> tab as the primary batch variable for correction. The batch variable can be changed by selecting a different variable from the <b>Select Variable for Batch</b> dropbox and the variable of interest can be selected by selecting a variable from the <b>Select Biological Variables</b> dropbox. Both of these parametrs can be found under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab after selecting <b>ComBatSeq</b> as a correction method.
+
+<p><b>BatchFLEX</b> will automatically update either the <b>left (Method 1)</b> or <b>right (Method 2)</b> matrix whenever a method is changed.</p>
+<p>Users can also <b>Quantile Normalize</b> the data before correction by selecting the <b>Quantile Normalize</b> checkbox.</p>
+
+<p>For <b>Raw Count</b> data, BatchFLEX will display two matrices under the <b>Matrix</b> tab of the <b>"Step 2 - Batch Correction"</b> tab. </p>
+<p>The <b>RNAseq Count Matrix Preview</b> will show the the raw uncorrected count matrix and the ComBatSeq corrected count matrix. </p>
+<p>The <b>RNASeq Count Matrix Transformed for Correction</b> will show the uncorrected raw count matrix after normalization and log2 transformation and the ComBatSeq corrected matrix after normalization and log2 transformation. This is necessary for comparison of correction methods based on raw count data to those based on log normalized data. </p>
+<p>All matrices will be automatically included in the <b>Zip</b> folder for download.</p>
+<p><b>BatchFLEX</b> uses <b>Trimmed Mean of M Values</b> as the default method of normalization, however, users can also switch to <b>Quantile Normalization</b> using the <b>Normalize RNAseq counts by</b> dropdown menu.
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess whether the <b>batch effect</b> is <b>removed</b> and to determine whether the <b>variable of interest</b> is <b>maintained</b> is maintained following <b>ComBatSeq correction</b>.</p>
+
+<p><b>For additional information please see:</b></p>
+<a href="https://rdrr.io/bioc/sva/man/ComBat_seq.html">ComBatSeq Documentation</a>
+<a href="https://bioconductor.org/packages/release/bioc/html/sva.html" target="_blank">SVA Bioconductor</a>
+<a href="https://academic.oup.com/nargab/article/2/3/lqaa078/5909519" target="_blank">ComBatSeq Journal</a>

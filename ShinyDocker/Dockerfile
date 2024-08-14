@@ -41,12 +41,13 @@ ENV LD_LIBRARY_PATH=/usr/lib/R/lib:/usr/lib/x86_64-linux-gnu:/usr/local/lib:/usr
 
 
 # Install required R packages
-RUN R -e "install.packages(c('shiny', 'shinyjqui', 'limma', 'DT', 'shinycssloaders', 'metafolio', 'corrplot', 'readr', 'dplyr', 'tidyverse', 'zip', 'glue', 'factoextra', 'FactoMineR', 'magick', 'ggfortify', 'ggplotify', 'draw', 'clValid', 'shinyWidgets', 'tidyr', 'immunedeconv', 'edgeR', 'umap', 'plotly', 'statVisual', 'GSVA', 'svglite', 'tabula', 'folio'))"
+RUN R -e "install.packages(c('shiny','shinyjqui','limma','bapred','DT','shinycssloaders','metafolio','corrplot','readr','dplyr','tidyverse','zip','glue','factoextra','FactoMineR',
+'magick','ggfortify','ggplotify','draw','clValid','shinyWidgets','tidyr','umap','plotly','statVisual','svglite','tabula','folio','bslib','readtext','shinythemes','uuid','stringr'))"
 
 
 # Install Bioconductor packages
 RUN R -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager')" \
-  && R -e "BiocManager::install(c('sva', 'affyPLM', 'scater', 'Harman', 'RUVSeq', 'ComplexHeatmap', 'pvca', 'bapred', 'statVisual'), ask = FALSE)"
+  && R -e "BiocManager::install(c('sva', 'affyPLM', 'scater', 'Harman', 'RUVSeq', 'ComplexHeatmap', 'pvca', 'bapred', 'statVisual','GSVA','edgeR'), ask = FALSE)"
 
 # Install 'remotes' package and use it to install 'omnideconv/immunedeconv' from GitHub
 RUN R -e "install.packages('remotes')" \   
@@ -65,11 +66,14 @@ RUN addgroup --system app && adduser --system --ingroup app app
 WORKDIR /app
 
 # Copy the R script files into the container at /app/
-COPY app/app.R /app/
-COPY app/default_housekeeping /app/default_housekeeping/
-COPY app/Example_Data /app/Example_Data/
-COPY app/GeneSet_Data /app/GeneSet_Data/
+COPY app/www /app/www/
+COPY app/R /app/R/
 COPY app/Mouse_To_Human_Gene_Conversion /app/Mouse_To_Human_Gene_Conversion/
+COPY app/GeneSet_Data /app/GeneSet_Data/
+COPY app/Example_Data /app/Example_Data/
+COPY app/default_housekeeping /app/default_housekeeping/
+COPY app/Batchflex_Homepage /app/Batchflex_Homepage/
+COPY app/app.R /app/
 
 # Set user permissions
 RUN chown app:app -R /app

@@ -1,0 +1,3 @@
+<b>Select Species</b>
+
+<p><b>BatchFLEX</b> currently expects either <b>Human</b> or <b>Mouse</b> data. By default, <b>BatchFLEX</b> will attempt to detect the species based on the geneset capitalization in the expression dataset, but users can click the radio button on the sidepanel of the <b>"Step 1 - Data Input"</b> tab to switch to species.</p>

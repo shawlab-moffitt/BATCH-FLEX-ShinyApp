@@ -1,0 +1,14 @@
+<b>Harman Correction</b>
+
+<p>To correct a matrix using <b>Harman</b>, users should select <b>Harman</b> as a method under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab.</p>
+<p>Users can <b>Quantile Normalize</b> the data before correction by selecting the <b>Quantile Normalize</b> checkbox.</p>
+<p><b>Harman</b> is a PCA and constrained optimization based technique. It attempts to maximize the removal of the batch effect under the contraint that the potential for overcorrection is kept below the <b>Confidence Limit</b> parameter.
+<p>The user can provide a <b>batch variable</b> for correction. By default, <b>BatchFLEX</b> will use the batch variable selected under the <b>"Select 1 - Data Input"</b> tab as the primary batch variable for correction. The user can also adjust the confidence limit, which is set to 0.95 and indicates that Harman requires 95% confidence that the detected effect is related to the <b>batch</b> variable before removal. Increasing the confidence limit will result in a more conservative correction while lowering the confidence limit will result in a more aggressive correction.</p>
+<p><b>BatchFLEX</b> will automatically update either the <b>left (Method 1)</b> or <b>right (Method 2)</b> matrix whenever a method is changed.</p>
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess whether the <b>batch effect</b> is <b><u>removed</u></b> and to determine whether the <b>variable of interest</b> is <b><u>maintained</u></b> following <b>Harman correction</b>.</p>
+
+<p><b>For additional information please see:</b></p>
+<a href="https://rdrr.io/bioc/Harman/man/harman.html" target="_blank">Harman Documentation</a>
+<a href="https://www.bioconductor.org/packages/release/bioc/html/Harman.html" target="_blank">Harman Bioconductor</a>
+<a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1212-5" target="_blank">Harman Journal</a>

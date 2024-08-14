@@ -1,0 +1,7 @@
+<b>Evaluate Correction</b>
+
+<p>To determine which correction method is most effective at removing the batch effect while preserving the variable of interest, users should set up <b>BatchFLEX</b> for correction evaluation</p>
+
+<p>To do this, users should select the desired <b>baseline correction method</b> as method 1 and <b>any comparitor correction method</b> as method 2 under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab.</p>
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess which correction method is most effective.</p>

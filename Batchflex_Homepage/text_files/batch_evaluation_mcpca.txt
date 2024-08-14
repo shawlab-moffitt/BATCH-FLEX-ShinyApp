@@ -1,0 +1,4 @@
+﻿<b>Multiple Components PCA</b>
+<p> Data can be visualized using <b>Multiple Components PCA</b> which can found by first clicking the <b>PCA</b> tab under the <b>"Step 2 - Batch Correction"</b> tab and then clicking the <b>Multiple Components PCA</b> tab.</p>
+<p><b>MC PCA</b> can be annotated by assigning <b>color</b> to any criteria in the meta file and can be adjusted by altering the number of principal components that are plotted. These parameters can be found under the <b>Multiple Components PCA Parameters</b> section of the sidepanel after selcting the <b>"Step 2 - Batch Correction"</b> tab and the<b>Multiple Components PCA</b> tab.</p>
+<p>Users can use <b>MC PCA</b> to identify which principal components are the major driver of the batch effect and to ensure that batch correction is able to remove the batch effect from multiple principal components.</p>

@@ -1,0 +1,15 @@
+<b>SVA Correction</b>
+
+<p>To correct a matrix using <b>SVA</b>, users should select <b>SVA</b> as a method under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab.</p>
+<p>Users also <b>Quantile Normalize</b> the data before correction by selecting the <b>Quantile Normalize</b> checkbox.</p>
+<p><b>SVA</b> is primarily used when the source of the batch effect is unknown, but is detected in the data. <b>SVA</b> builds surrogate variables from high-dimensional data, which are then used to adjust for unknown sources of variability. </p>
+<p>The user can provide a <b>variable of interest</b>, which is used to generate a model to estimate the surrogate variables that describe any latent sources of variability. By default, <b>BatchFLEX</b> will use the third column of the meta data as the <b>variable of interest</b>. </p>
+<p><b>SVA</b> also includes two methods to estimate surrogate variables: <b>"Leek"</b> and <b>"Be"</b>. By default, this is set to <b>"Be"</b>, however, this can be switched by selecting <b>"Leek"</b> from the drop down menu.
+<p><b>BatchFLEX</b> will automatically update either the <b>left (Method 1)</b> or <b>right (Method 2)</b> matrix whenever a method is changed.</p>
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess whether the <b>batch effect</b> is <b><u>removed</u></b> and to determine whether the <b>variable of interest</b> is <b><u>maintained</u></b> following <b>SVA correction</b>.</p>
+
+<p><b>For additional information please see:</b></p>
+<a href="https://rdrr.io/bioc/sva/" target="_blank">SVA Documentation</a>
+<a href="https://bioconductor.org/packages/release/bioc/html/sva.html" target="_blank">SVA Bioconductor</a>
+<a href="https://academic.oup.com/bioinformatics/article/28/6/882/311263" target="_blank">SVA Journal</a>

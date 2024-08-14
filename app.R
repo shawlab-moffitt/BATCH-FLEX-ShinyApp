@@ -76,7 +76,7 @@ ui <-
                                         height = 900,
                                         bslib::layout_columns(
                                           bslib::card(bslib::card_header("Introduction"),
-                                                      bslib::card_body(shiny::uiOutput("homepage_text"))
+                                                      bslib::card_body(shiny::htmlOutput("homepage_text"))
                                           ),
                                           bslib::card(bslib::card_header("BatchFLEX Workflow"),
                                                       bslib::card_body(shiny::imageOutput("homepage"))
@@ -1884,7 +1884,7 @@ server <- function(input, output, session) {
   #output$homepage_text <- renderText(homepage_text$text)
   # Homepage homepage
   output$homepage <- renderImage({
-    list(src = "www/BatchFLEX_Figure_1_JD_V8_20240809.png",
+    list(src = "www/BatchFLEX_Figure_1_JD_V8_20240813.png",
          contentType = 'image/png',
          width = 600,
          height = 800)
@@ -2163,7 +2163,7 @@ server <- function(input, output, session) {
   observeEvent(input$batch_evaluation_sva, {
     TutorialPlayed(1)
     output$video <- renderUI({
-      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/I1bBgVq6HfU?playlist=I1bBgVq6HfU&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
+      HTML('<iframe width="100%" height="100%" src="//www.youtube.com/embed/XKCf6GcEdtw?playlist=XKCf6GcEdtw&&loop=1;rel=0&autoplay=1&mute=1&controls=0&showinfo=0" frameborder="0" allowfullscreen></iframe>')
     })
     output$tutorial_text <- renderText(homepage_tutorial_text_list[["batch_evaluation_sva"]]$text)
   })

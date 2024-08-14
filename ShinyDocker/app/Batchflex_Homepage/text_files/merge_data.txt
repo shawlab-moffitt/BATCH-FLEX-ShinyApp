@@ -1,0 +1,14 @@
+<b>Merge Data</b>
+
+<p>For users who have multiple matrix and meta files that they would like to merge and harmonize into a single dataset, we have provided an accompanying <b>MergeQC</b> shiny app.</p>
+<p>To access this shiny app, users are directed to the <b>Homepage</b> or below where a link to the shiny app, and, if needed, a link to the accompanying GitHub page can be found.</p>
+<a href="https://shawlab-moffitt.shinyapps.io/mergeqc/" target="_blank">MergeQCShiny</a>
+<a href="https://github.com/shawlab-moffitt/mergeQC/tree/main" target="_blank">MergeQCGitHub</a>
+<p>Once <b>MergeQC</b> loads, users can upload multiple matrix files by selecting the browse button and <b>CTRL</b> (windows) or <b>COMMAND</b> (mac) clicking each matrix file to be merged. Next, users should do the same for each meta file.</p>
+<b>Input Requirements</b>
+<b>1. Expression Data</b>
+A Tab-deliminated data table with the first column consisting of feature names and each subsequent column consistening of numeric expression values. Each column name should correspond to a unique sample.
+<b>2. Meta Data</b>
+A tab-deliminated data table with the first column consisting of sample names that are found in the expression data column names. Subsequent columns should be additional information about each sample. 
+<p><b>MergeQC</b> will automatically merge the datasets together and will generate a "Batch" column within the metafile for each file included.</p>
+An inner merged matrix and meta file can be downloaded directly by clicking the corresponding action buttons. Inner merged files consist of only features that are similar between all datasets being merged while the full datasets will include NA values for features that do not overlap.

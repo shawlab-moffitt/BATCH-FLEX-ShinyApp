@@ -1,0 +1,5 @@
+<b>Select Batch</b>
+
+<p>By Default, <b>BatchFLEX</b> will select the <b>second column</b> of the meta file as the batch variable. To adjust this, users can select a different column from the select batch variable drop down menu on the sidepanel of the <b>"Step 1 - Data Input"</b> tab.</p>
+
+<p>This will be used to select the batch variable by default for all batch correction methods with this variable as an input. This can also be adjusted individually for each batch correction method in the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab after selecting the batch correction method.</p>

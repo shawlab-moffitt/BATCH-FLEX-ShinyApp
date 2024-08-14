@@ -1,0 +1,6 @@
+﻿<b>Relative Log Expression</b>
+<p>Users can access the <b>RLE</b> plot by clicking the <b>Relative Log Expression Plot</b> tab after clicking the <b>"Step 2 - Batch Correction"</b> tab.</p>
+<p><b>RLE</b> can be annotated by assigning <b>color</b> to any criteria in the meta file. These parameters can be found under the <b>RLE Parameters</b> section of the side panel under the <b>"Step 2 - Batch Correction"</b> tab after selecting the <b>Relative Log Expression</b> tab. </p>
+<p>The user can use the <b>sample-wise relative log expression</b> plot to visualize <b>unwanted variation</b> derived from the <b>batch effect</b>. This plot shows the median (dot) and interquartile range (grey line) for each sample. The whiskers are set at 1.5 times the interquartile range and any outliers are indicated as a dot outside the whiskers. </p>
+<p>Users should use this plot to assess whether the <b>batch effect</b> changes the <b>overall median expression</b> of the data and whether the batch effect introduces additional variability. </p>
+<a href="" onclick="window.open('rle_study.png','targetWindow', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width = auto, height = auto'); return false;">Example Diversity Evaluation using the Batch</a> 

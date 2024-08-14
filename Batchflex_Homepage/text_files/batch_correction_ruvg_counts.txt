@@ -1,0 +1,27 @@
+<b>RUVg on RNASeq Raw Count Data</b>
+
+<p style = "color:tomato"><b>RUVg</b> can be applied to both <b><u>Log Normalized</u></b> and <b><u>Raw Count</u></b> data. This section of the tutorial covers using RUVg for <b><u>raw count</u></b> data. To understand how to use RUVg on log normalized data, please select the RUVg LogNorm button instead.</p>
+<p style = "color:tomato">BatchFLEX will automatically detect whether the input data is <b><u>log normalized</u></b> or <b><u>raw counts</u></b> based on whether the input data matrix is <b><u>numeric or double</u></b>. Users can override this assumption by clicking the <b><u>"Input is RNAseq Count"</u></b> button on the <b><u>"Step 1 - Data Input" tab.</u></b> </p>
+<p>To correct a matrix using <b>RUVg</b>, users should select <b>RUVg</b> as a method under the sidepanel of <b>"Step 2 - Batch Correction"</b> tab. </p>
+<p><b>RUVg</b> performs factor analysis on the raw count data based on a subset of negative controls known not to be differentially expressed. These controls can be a set of housekeeping genes, spike in sequences, or a set of empirical controls such as the least significantly differentially expressed genes based on a prior DE analysis performed prior to RUVg normalization.</p>
+<p>By default, <b>BatchFLEX</b> includes multiple housekeeping gene lists and selects a set of housekeeping genes from <b>Eisenberg</b>. This can be adjusted by clicking the <b>Select Housekeeping Genes for Control</b> dropbox and either selecting a different set of housekeeping genes or selecting <b>UserInput</b> and providing a set of controls. </p>
+<a href="" onclick="window.open('housekeeping.png','targetWindow', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width = auto, height = auto'); return false;">Example Housekeeping Gene List</a> 
+<p>Users can also adjust the RUVg parameters such as the <b>Factors to Estimate</b>, <b>Factors to Drop</b>, and the <b>RUVg Tolerance</b>. <b>Factors to Estimate</b> adjusted the number of factors of unwanted variation that is estimated from the data by RUVg. <b>Factors to Drop</b> must be less than the <b>Factors to Estimate</b> parameter and is usually only selected if the first estimated factor captures the variable of interest. <b>RUVg Tolerance</b> alters what is considered a postiive value. Singular values must be larger than the <b>RUVg Tolerance</b> to be considered positive. </p>
+<p><b>Mean Center</b> simply mean centers the data prior to RUVg correction. </p>
+<p>For <b>Raw Count</b> matrices, RUVg output will automatically be rounded for further downstream analysis.</p>
+
+<p><b>BatchFLEX</b> will automatically update either the <b>left (Method 1)</b> or <b>right (Method 2)</b> matrix whenever a method is changed.</p>
+<p>Users can also <b>Quantile Normalize</b> the data before correction by selecting the <b>Quantile Normalize</b> checkbox.</p>
+
+<p>For <b>Raw Count</b> data, BatchFLEX will display two matrices under the <b>Matrix</b> tab of the <b>"Step 2 - Batch Correction"</b> tab. The <b>RNAseq Count Matrix Preview</b> will show the the raw uncorrected count matrix and the RUVg corrected count matrix. The <b>RNASeq Count Matrix Transformed for Correction</b> will show the uncorrected raw count matrix after normalization and log2 transformation and the RUVg corrected matrix after normalization and log2 transformation. This is necessary for comparison of correction methods based on raw count to those based on log normalized data. All matrices will be automatically included in the <b>Zip</b> folder for download.</p>
+<p><b>BatchFLEX</b> uses <b>Trimmed Mean of M Values</b> as the default method of normalization, however, users can also switch to <b>Quantile Normalization</b> using the <b>Normalize RNAseq counts by</b> dropdown menu.
+
+<p>Then, users can use the evaluation methods included in <b>BatchFLEX</b> to assess whether the <b>batch effect</b> is <b>removed</b> and to determine whether the <b>variable of interest</b> is <b>maintained</b> is maintained following <b>RUVg correction</b>.</p>
+
+<p><b>For additional information please see:</b></p>
+<a href="https://rdrr.io/bioc/RUVSeq/man/RUVg.html" target="_blank">RUVg Documentation</a>
+<a href="https://www.bioconductor.org/packages/release/bioc/html/RUVSeq.html" target="_blank">RUVSeq Bioconductor</a>
+<a href="https://www.nature.com/articles/nbt.2931" target="_blank">RUVSeq Journal</a>
+<a href="https://www.sciencedirect.com/science/article/pii/S0168952513000899?via%3Dihub" target="_blank">Eisenberg Housekeeping Journal</a>
+<a href="https://journals.physiology.org/doi/full/10.1152/physiolgenomics.00040.2001?rfr_dat=cr_pub++0pubmed&url_ver=Z39.88-2003&rfr_id=ori%3Arid%3Acrossref.org" target="_blank">Hsiao Housekeeping Journal</a>
+<a href="https://academic.oup.com/gigascience/article/8/9/giz106/5570567?login=true" target="_blank">Lin Housekeeping Journal</a>

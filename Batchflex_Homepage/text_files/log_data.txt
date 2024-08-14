@@ -1,0 +1,3 @@
+<b>Log Data</b>
+
+<p>To Log a dataset, users can simply click the <b>Log2+1</b> checkbox on the sidepanel of the <b>"Step 1 - Data Input"</b> tab. <b>BatchFLEX</b> will automatically log the loaded dataset and will display the updated matrix.</p>

@@ -1,0 +1,3 @@
+<b>Figure Settings</b>
+<p>Any adjustable setting for the plots included in <b>BatchFLEX</b> can be found under the sidepanel of the <b>"Step 2 - Batch Correction"</b> tab after selecting <b>Figure Settings</b>. This panel will automatically update to whichever plot the user has open. 
+<p>Each parameter setting is <b>unique</b> between figures. As an example, increasing the height of the downloaded <b>Relative Log Expression</b> plot will <b><u>not</u></b> alter the height of the <b>Explanatory Variables</b> plot. </p>
