@@ -121,8 +121,6 @@ Figure 25 is a comparison relative log expression plot that is colored by study 
 
 <img width="468" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/70a1a39d-62ce-4644-bb98-43557441edc5">
 
-<img width="468" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/3d5f11dc-9932-4032-baaa-6f940eecc2fd">
-
 In Figure 28, the median expression of the housekeeping gene, beta actin, has been corrected and no longer differs significantly between batch (ANOVA p = 1). In Figure 29, gene set enrichment analysis was performed using the HSIAO housekeeping gene set, which showed a significant difference in enrichment in the uncorrected dataset, but no significant difference in the corrected dataset. The expression of KIT is shown in Figure 30, which is highly expressed in stem cells. A significant difference in expression is seen in both the uncorrected and corrected data sets (ANOVA p < 2.2e-16) with stem cells expressing the highest levels of KIT. Additionally, in Figure 31, the expression of MYB is shown, which should be upregulated specifically during T and B cell development. After correction, precursor T and B cells still display the highest levels of MYB expression. These results highlight that changes due to the variable of interest are maintained post correction. Cumulatively, these results show that the batch correction method was successful at removing the batch effect and maintaining the variable of interest, indicating that an appropriate level of correction was obtained and over or under correction did not occur.  
 
 <img width="468" alt="image" src="https://github.com/shawlab-moffitt/BATCH-FLEX-ShinyApp/assets/89986836/27f50b2c-6e9c-476d-8cbc-4201e4dc388b">
